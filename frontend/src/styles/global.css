@@ -1,0 +1,28 @@
+/*
+ * Estilos globales de DonemosSC — importados desde el layout principal.
+ * Se declara Tailwind manualmente (no lo aplica applyBaseStyles del integration)
+ * para poder inyectar tokens del Principio III antes que la capa base de Tailwind.
+ * Los tokens completos entran en T034.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  /* Respetar prefers-reduced-motion (Principio III — accesibilidad AAA). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

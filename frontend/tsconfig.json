@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "react",
+    "types": ["astro/client", "vitest/globals", "@testing-library/jest-dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@donemos/shared": ["../packages/shared/src/index.ts"],
+      "@donemos/shared/*": ["../packages/shared/src/*"],
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*", "test/**/*", "astro.config.mjs", "vitest.config.ts", "playwright.config.ts"],
+  "exclude": ["node_modules", "dist", ".astro"]
+}

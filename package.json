@@ -10,10 +10,19 @@
   },
   "scripts": {
     "dev": "echo \"Ejecuta 'pnpm --filter backend dev' y 'pnpm --filter frontend dev' en terminales separadas\" && exit 0",
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
+    "build": "pnpm -r --if-present build",
+    "test": "pnpm -r --if-present test",
     "test:smoke": "echo \"Se materializa en la tarea T149 del plan\" && exit 0",
-    "lint": "pnpm -r lint",
+    "lint": "pnpm -r --if-present lint",
     "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.6.3"
   }
 }

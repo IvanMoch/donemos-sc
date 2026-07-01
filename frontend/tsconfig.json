@@ -3,7 +3,7 @@
   "compilerOptions": {
     "jsx": "preserve",
     "jsxImportSource": "react",
-    "types": ["astro/client", "vitest/globals", "@testing-library/jest-dom"],
+    "types": ["astro/client", "vitest/globals", "@testing-library/jest-dom", "node"],
     "baseUrl": ".",
     "paths": {
       "@donemos/shared": ["../packages/shared/src/index.ts"],

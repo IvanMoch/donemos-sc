@@ -9,16 +9,16 @@
  * En CI usamos `PLAYWRIGHT_BASE_URL` para poder apuntar al preview build; en local
  * asumimos `astro dev` en el puerto 4321.
  */
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, type PlaywrightTestConfig } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:4321';
+const isCI = !!process.env.CI;
 
-export default defineConfig({
+const config: PlaywrightTestConfig = {
   testDir: './test/e2e',
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
     baseURL,
@@ -39,12 +39,18 @@ export default defineConfig({
       testMatch: /admin\/.*\.e2e\.ts/,
     },
   ],
-  webServer: process.env.CI
-    ? undefined
-    : {
-        command: 'pnpm dev',
-        url: baseURL,
-        reuseExistingServer: true,
-        timeout: 60_000,
-      },
-});
+};
+
+// En CI el runner arranca el preview; localmente delegamos a `astro dev`.
+if (isCI) {
+  config.workers = 1;
+} else {
+  config.webServer = {
+    command: 'pnpm dev',
+    url: baseURL,
+    reuseExistingServer: true,
+    timeout: 60_000,
+  };
+}
+
+export default defineConfig(config);

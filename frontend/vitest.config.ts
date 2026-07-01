@@ -9,11 +9,13 @@
  * apoyan las verificaciones AAA del Principio III.
  */
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
+// Nota: no incluimos @vitejs/plugin-react en Vitest — la transformación de JSX
+// la resuelve esbuild interno de Vitest. El plugin se mantiene como dependencia
+// para uso puntual desde tests que lo requieran vía config heredada.
+
 export default defineConfig({
-  plugins: [react()],
   resolve: {
     alias: {
       '@donemos/shared': fileURLToPath(new URL('../packages/shared/src/index.ts', import.meta.url)),

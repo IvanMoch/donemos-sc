@@ -1,0 +1,334 @@
+openapi: 3.1.0
+info:
+  title: Donemos San Cristóbal — Admin API
+  version: 1.0.0
+  description: |
+    Endpoints privados del panel administrativo del banco de sangre.
+    Base path: `/api/v1/admin`. Requieren cookie de sesión (HttpOnly JWT).
+    Todas las mutaciones se registran en `admin_audit_log`.
+
+servers:
+  - url: /api/v1/admin
+
+security:
+  - cookieAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: Login del administrador
+      security: []  # Este es el único endpoint sin auth previa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '204':
+          description: Login OK. La cookie `session` se setea en la respuesta (HttpOnly, Secure, SameSite=Strict, TTL 8h).
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+        '401':
+          description: Credenciales inválidas
+        '429':
+          description: Rate limit — protección contra fuerza bruta
+
+  /auth/logout:
+    post:
+      summary: Cerrar sesión
+      responses:
+        '204':
+          description: Cookie de sesión eliminada
+
+  /me:
+    get:
+      summary: Perfil del admin autenticado
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProfile'
+        '401':
+          description: No autenticado
+
+  /slots:
+    get:
+      summary: Listar franjas (con filtros)
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: includeDisabled
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminSlot'
+    post:
+      summary: Crear franja (FR-018, FR-018a)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSlotRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSlot'
+        '400':
+          description: Datos inválidos o intento de crear fuera de horario sin `isExceptionHours=true`
+        '409':
+          description: Franja duplicada (misma fecha + start + end)
+
+  /slots/{id}:
+    patch:
+      summary: Editar capacidad u horas de una franja (FR-019)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSlotRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSlot'
+        '409':
+          description: Cambio incompatible con citas activas (por ejemplo capacity < ocupados)
+
+  /slots/{id}/disable:
+    post:
+      summary: Deshabilitar franja (FR-020) — cancela automáticamente las citas activas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisableSlotRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableSlotResult'
+
+  /appointments:
+    get:
+      summary: Listar citas por rango de fechas (FR-021)
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, attended, no_show, cancelled_by_donor, cancelled_by_bank]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminAppointment'
+
+  /appointments/export.pdf:
+    get:
+      summary: Descargar PDF con las citas del rango (FR-022)
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: PDF binario
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+
+  /system-state:
+    get:
+      summary: Leer estado del kill switch
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStateFull'
+
+  /system-state/kill-switch:
+    post:
+      summary: Activar o desactivar el kill switch (FR-023)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToggleKillSwitchRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStateFull'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string }
+        password: { type: string, format: password }
+
+    AdminProfile:
+      type: object
+      required: [id, username, fullName]
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        fullName: { type: string }
+
+    AdminSlot:
+      type: object
+      required: [id, date, startTime, endTime, capacity, usedCapacity, isDisabled, isExceptionHours]
+      properties:
+        id: { type: string, format: uuid }
+        date: { type: string, format: date }
+        startTime: { type: string }
+        endTime: { type: string }
+        capacity: { type: integer }
+        usedCapacity: { type: integer }
+        isDisabled: { type: boolean }
+        isExceptionHours: { type: boolean }
+        disabledReason:
+          type: string
+          nullable: true
+        disabledAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateSlotRequest:
+      type: object
+      required: [date, startTime, endTime, capacity]
+      properties:
+        date: { type: string, format: date }
+        startTime: { type: string, example: '07:00' }
+        endTime: { type: string, example: '07:35' }
+        capacity: { type: integer, minimum: 1, maximum: 100 }
+        isExceptionHours:
+          type: boolean
+          default: false
+          description: Requerido `true` para franjas fuera de L–V 7:00–12:00
+
+    UpdateSlotRequest:
+      type: object
+      properties:
+        startTime: { type: string }
+        endTime: { type: string }
+        capacity: { type: integer, minimum: 1, maximum: 100 }
+
+    DisableSlotRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          nullable: true
+
+    DisableSlotResult:
+      type: object
+      required: [slot, cancelledAppointments]
+      properties:
+        slot:
+          $ref: '#/components/schemas/AdminSlot'
+        cancelledAppointments:
+          type: integer
+          description: Cantidad de citas que se cancelaron automáticamente (FR-020)
+
+    AdminAppointment:
+      type: object
+      required: [id, code, firstName, lastName, idNumber, status, slot]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        idNumber: { type: string }
+        status:
+          type: string
+          enum: [active, attended, no_show, cancelled_by_donor, cancelled_by_bank]
+        slot:
+          $ref: '#/components/schemas/AdminSlot'
+        eligibilityDeclaredAt: { type: string, format: date-time }
+        cancelledAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    SystemStateFull:
+      type: object
+      required: [appointmentsDisabled]
+      properties:
+        appointmentsDisabled: { type: boolean }
+        disabledAt:
+          type: string
+          format: date-time
+          nullable: true
+        disabledByAdmin:
+          $ref: '#/components/schemas/AdminProfile'
+        reason:
+          type: string
+          nullable: true
+
+    ToggleKillSwitchRequest:
+      type: object
+      required: [enabled]
+      properties:
+        enabled:
+          type: boolean
+          description: '`true` activa el kill switch (cierra el flujo público); `false` lo desactiva'
+        reason:
+          type: string
+          nullable: true

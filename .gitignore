@@ -1,0 +1,44 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Builds
+dist/
+build/
+.astro/
+.turbo/
+.next/
+
+# Coverage y reports
+coverage/
+playwright-report/
+test-results/
+lighthouse-report/
+
+# Variables de entorno (nunca commiteadas)
+.env
+.env.*
+!.env.example
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Cache Prisma
+backend/prisma/dev.db*
+
+# Artefactos generados por el equipo (PDFs de prueba, capturas locales)
+*.pdf
+!docs/**/*.pdf
+
+# Perfil local del asistente
+.claude/

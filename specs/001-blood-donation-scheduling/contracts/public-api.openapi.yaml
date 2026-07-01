@@ -1,0 +1,381 @@
+openapi: 3.1.0
+info:
+  title: Donemos San Cristóbal — Public API
+  version: 1.0.0
+  description: |
+    Endpoints públicos consumidos por el sitio del donante.
+    Base path: `/api/v1`. Todas las respuestas usan JSON.
+    Los datos personales (nombre, apellido, cédula) nunca aparecen en URLs.
+
+servers:
+  - url: /api/v1
+    description: Backend NestJS del mismo monolito
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Servicio operativo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+
+  /content/donation-info:
+    get:
+      summary: Requisitos y criterios de exclusión (FR-001, FR-002)
+      responses:
+        '200':
+          description: Contenido informativo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonationInfo'
+
+  /system/status:
+    get:
+      summary: Estado global del sistema (kill switch) — leído por el frontend para decidir si mostrar el flujo o el mensaje de pausa
+      responses:
+        '200':
+          description: Estado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStatus'
+
+  /slots:
+    get:
+      summary: Listar franjas horarias con cupo disponible dentro de la ventana pública (FR-004, FR-013)
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha inicio (default hoy)
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha fin (default hoy+30)
+      responses:
+        '200':
+          description: Lista de franjas ordenadas por fecha/hora
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicSlot'
+
+  /appointments:
+    post:
+      summary: Crear cita (FR-005, FR-006, FR-007, FR-008, FR-012)
+      description: |
+        Bloqueado por el kill switch (503).
+        Rechaza si ya existe una cita `active` con la misma cédula (409).
+        Rechaza si no hay cupo (409).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointmentRequest'
+      responses:
+        '201':
+          description: Cita creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentConfirmation'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Cédula ya con cita activa, o franja sin cupo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '429':
+          description: Rate limit excedido
+        '503':
+          description: Kill switch activo — agendamiento cerrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KillSwitchResponse'
+
+  /appointments/lookup:
+    post:
+      summary: Consultar cita por cédula + código (US2 / FR-013, FR-016)
+      description: Respuesta genérica si la combinación no existe.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LookupRequest'
+      responses:
+        '200':
+          description: Cita encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentDetail'
+        '404':
+          description: No existe — mensaje genérico
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericNotFound'
+        '429':
+          description: Rate limit excedido
+
+  /appointments/{code}/cancel:
+    post:
+      summary: Cancelar cita (US2 / FR-014, FR-023b)
+      description: Requiere cédula en el body para autorizar (misma que registró la cita). Funciona con kill switch activo.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelRequest'
+      responses:
+        '200':
+          description: Cita cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentDetail'
+        '404':
+          description: No existe o cédula no coincide (mensaje genérico)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericNotFound'
+
+  /appointments/{code}/reschedule:
+    patch:
+      summary: Reagendar cita (US2 / FR-015)
+      description: Bloqueado por kill switch (409). Conserva el `code`.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RescheduleRequest'
+      responses:
+        '200':
+          description: Reagendada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentConfirmation'
+        '404':
+          description: No existe o cédula no coincide
+        '409':
+          description: Nueva franja sin cupo o kill switch activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+
+components:
+  schemas:
+    Health:
+      type: object
+      required: [status, db]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        db:
+          type: string
+          enum: [ok, down]
+
+    DonationInfo:
+      type: object
+      required: [requirements, exclusions, hospital]
+      properties:
+        requirements:
+          type: array
+          items:
+            type: object
+            required: [title, description]
+            properties:
+              title: { type: string }
+              description: { type: string }
+        exclusions:
+          type: array
+          items:
+            type: object
+            required: [title, description, kind]
+            properties:
+              title: { type: string }
+              description: { type: string }
+              kind:
+                type: string
+                enum: [conditional, excluding, special_section]
+        hospital:
+          type: object
+          required: [name, mapUrl, schedule]
+          properties:
+            name: { type: string, example: 'Hospital Central de San Cristóbal' }
+            mapUrl: { type: string, format: uri }
+            schedule: { type: string, example: 'Lunes a viernes, 7:00 a 12:00' }
+
+    SystemStatus:
+      type: object
+      required: [appointmentsDisabled]
+      properties:
+        appointmentsDisabled:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+
+    PublicSlot:
+      type: object
+      required: [id, date, startTime, endTime, remainingCapacity]
+      properties:
+        id: { type: string, format: uuid }
+        date: { type: string, format: date }
+        startTime: { type: string, example: '07:00' }
+        endTime: { type: string, example: '07:35' }
+        remainingCapacity: { type: integer, minimum: 0 }
+
+    CreateAppointmentRequest:
+      type: object
+      required: [firstName, lastName, idNumber, slotId, eligibilityDeclared]
+      properties:
+        firstName: { type: string, minLength: 1, maxLength: 60 }
+        lastName: { type: string, minLength: 1, maxLength: 60 }
+        idNumber:
+          type: string
+          pattern: '^[VE][0-9]{6,8}$'
+          description: Cédula normalizada mayúsculas, sin guion
+        slotId: { type: string, format: uuid }
+        eligibilityDeclared:
+          type: boolean
+          description: DEBE ser `true`; el backend rechaza si es `false`
+
+    AppointmentConfirmation:
+      type: object
+      required: [code, slot, hospital]
+      properties:
+        code: { type: string, minLength: 10, maxLength: 10 }
+        slot:
+          $ref: '#/components/schemas/PublicSlot'
+        hospital:
+          type: object
+          properties:
+            name: { type: string }
+            mapUrl: { type: string, format: uri }
+        reminders:
+          type: array
+          items: { type: string }
+          example: ['Traer cédula de identidad vigente', 'Venir bien desayunado']
+
+    LookupRequest:
+      type: object
+      required: [code, idNumber]
+      properties:
+        code: { type: string }
+        idNumber: { type: string }
+
+    CancelRequest:
+      type: object
+      required: [idNumber]
+      properties:
+        idNumber: { type: string }
+
+    RescheduleRequest:
+      type: object
+      required: [idNumber, newSlotId]
+      properties:
+        idNumber: { type: string }
+        newSlotId: { type: string, format: uuid }
+
+    AppointmentDetail:
+      type: object
+      required: [code, status, slot, hospital]
+      properties:
+        code: { type: string }
+        status:
+          type: string
+          enum: [active, attended, no_show, cancelled_by_donor, cancelled_by_bank]
+        cancellationReason:
+          type: string
+          nullable: true
+        slot:
+          $ref: '#/components/schemas/PublicSlot'
+        hospital:
+          type: object
+          properties:
+            name: { type: string }
+            mapUrl: { type: string, format: uri }
+
+    ValidationError:
+      type: object
+      required: [error, issues]
+      properties:
+        error: { type: string, example: 'validation_failed' }
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              path: { type: string }
+              message: { type: string }
+
+    ConflictError:
+      type: object
+      required: [error, code]
+      properties:
+        error: { type: string }
+        code:
+          type: string
+          enum: [duplicate_active_appointment, slot_full, kill_switch_active]
+        message: { type: string }
+
+    GenericNotFound:
+      type: object
+      required: [error, message]
+      properties:
+        error: { type: string, example: 'not_found' }
+        message:
+          type: string
+          example: 'No encontramos una cita con esos datos.'
+
+    KillSwitchResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          example: 'appointments_disabled'
+        message:
+          type: string
+          example: 'El agendamiento está temporalmente cerrado.'

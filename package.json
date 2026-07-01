@@ -1,0 +1,19 @@
+{
+  "name": "donemos-sc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema de agendamiento de citas para donación de sangre — Hospital Central de San Cristóbal",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.18.1",
+    "pnpm": ">=9.15.0"
+  },
+  "scripts": {
+    "dev": "echo \"Ejecuta 'pnpm --filter backend dev' y 'pnpm --filter frontend dev' en terminales separadas\" && exit 0",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:smoke": "echo \"Se materializa en la tarea T149 del plan\" && exit 0",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write ."
+  }
+}

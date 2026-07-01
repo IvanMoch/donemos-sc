@@ -1,0 +1,242 @@
+# CI mínimo — se irá extendiendo con la tarea T014 del plan.
+#
+# Objetivo actual (pre-scaffolding): garantizar que ningún PR llegue a develop/main
+# sin verificar los documentos que reglamentan el proyecto (Constitución + spec + plan + tasks + CONTRIBUTING).
+# Cuando T014 cierre, este workflow se amplía con jobs de:
+#   - lint (ESLint + Prettier)
+#   - test-backend (Jest + testcontainers Postgres)
+#   - test-frontend (Vitest + Playwright + @axe-core/playwright con umbral AAA)
+#   - lighthouse-mobile (Performance ≥ 90, Accessibility ≥ 95)
+#   - openapi-check (contrato generado ≡ contrato versionado)
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guardrails:
+    name: Guardrails de documentación
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar Constitución
+        run: test -f .specify/memory/constitution.md
+
+      - name: Verificar spec, plan, tasks
+        run: |
+          test -f specs/001-blood-donation-scheduling/spec.md
+          test -f specs/001-blood-donation-scheduling/plan.md
+          test -f specs/001-blood-donation-scheduling/tasks.md
+
+      - name: Verificar quickstart y contratos
+        run: |
+          test -f specs/001-blood-donation-scheduling/quickstart.md
+          test -d specs/001-blood-donation-scheduling/contracts
+
+      - name: Verificar CONTRIBUTING y README
+        run: |
+          test -f CONTRIBUTING.md
+          test -f README.md
+
+      - name: Verificar que no haya secretos en el repo
+        run: |
+          if git ls-files | grep -E '(^|/)\.env($|\.[^e])'; then
+            echo "❌ Se detectó un archivo .env commiteado. Rotar y eliminar."
+            exit 1
+          fi
+          echo "✅ Sin .env commiteados."
+
+      - name: Verificar que .claude/ esté ignorado
+        run: |
+          if git ls-files | grep -q "^\.claude/"; then
+            echo "❌ .claude/ está trackeado. Debe estar en .gitignore."
+            exit 1
+          fi
+          echo "✅ .claude/ correctamente ignorado."
+
+  install:
+    name: Install workspaces (si existen)
+    runs-on: ubuntu-latest
+    needs: guardrails
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar si el scaffolding ya existe
+        id: check
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "scaffolded=true" >> $GITHUB_OUTPUT
+          else
+            echo "scaffolded=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup pnpm
+        if: steps.check.outputs.scaffolded == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        if: steps.check.outputs.scaffolded == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'pnpm'
+
+      - name: Install
+        if: steps.check.outputs.scaffolded == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Skip (scaffolding aún no aplicado)
+        if: steps.check.outputs.scaffolded == 'false'
+        run: echo "⏭️  pnpm-lock.yaml aún no existe (T002 pendiente). Skip install."
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar si el scaffolding ya existe
+        id: check
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "scaffolded=true" >> $GITHUB_OUTPUT
+          else
+            echo "scaffolded=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup pnpm + Node
+        if: steps.check.outputs.scaffolded == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        if: steps.check.outputs.scaffolded == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'pnpm'
+
+      - name: Install
+        if: steps.check.outputs.scaffolded == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        if: steps.check.outputs.scaffolded == 'true'
+        run: pnpm lint
+
+      - name: Skip
+        if: steps.check.outputs.scaffolded == 'false'
+        run: echo "⏭️  Lint se activa cuando T005 esté cerrado."
+
+  test:
+    name: Test (backend + frontend)
+    runs-on: ubuntu-latest
+    needs: install
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: donemos
+          POSTGRES_PASSWORD: donemos
+          POSTGRES_DB: donemos_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar si el scaffolding ya existe
+        id: check
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "scaffolded=true" >> $GITHUB_OUTPUT
+          else
+            echo "scaffolded=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup pnpm
+        if: steps.check.outputs.scaffolded == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        if: steps.check.outputs.scaffolded == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'pnpm'
+
+      - name: Install
+        if: steps.check.outputs.scaffolded == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        if: steps.check.outputs.scaffolded == 'true'
+        env:
+          DATABASE_URL: 'postgres://donemos:donemos@localhost:5432/donemos_test'
+          JWT_SECRET: 'ci-secret-not-for-prod'
+          REDACTION_PEPPER: 'ci-pepper-not-for-prod'
+        run: pnpm test
+
+      - name: Skip
+        if: steps.check.outputs.scaffolded == 'false'
+        run: echo "⏭️  Tests se activan cuando T012/T013 estén cerrados."
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar si el scaffolding ya existe
+        id: check
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "scaffolded=true" >> $GITHUB_OUTPUT
+          else
+            echo "scaffolded=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup pnpm + Node
+        if: steps.check.outputs.scaffolded == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        if: steps.check.outputs.scaffolded == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'pnpm'
+
+      - name: Install
+        if: steps.check.outputs.scaffolded == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        if: steps.check.outputs.scaffolded == 'true'
+        run: pnpm build
+
+      - name: Skip
+        if: steps.check.outputs.scaffolded == 'false'
+        run: echo "⏭️  Build se activa cuando exista scaffolding."

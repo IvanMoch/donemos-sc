@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+.astro
+.turbo
+.next
+coverage
+playwright-report
+test-results
+lighthouse-report
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+CHANGELOG.md

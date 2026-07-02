@@ -12,7 +12,7 @@
     "dev": "echo \"Ejecuta 'pnpm --filter backend dev' y 'pnpm --filter frontend dev' en terminales separadas\" && exit 0",
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
-    "test:smoke": "echo \"Se materializa en la tarea T149 del plan\" && exit 0",
+    "test:smoke": "pnpm --filter backend test:integration && pnpm --filter frontend test:e2e",
     "lint": "pnpm -r --if-present lint",
     "format": "prettier --write ."
   },

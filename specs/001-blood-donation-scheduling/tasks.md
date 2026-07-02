@@ -124,10 +124,10 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 **Frontend**
 
 - [X] T053 [P] [US1] Vitest unit para `Wizard` state machine en `frontend/src/components/wizard/wizard-state.test.ts`
-- [ ] T054 [P] [US1] Playwright E2E happy path `<90s` en `frontend/test/e2e/us1-happy-path.spec.ts` (emulador Pixel 5, red 3G lenta, incluye assertion de tiempo)
-- [ ] T055 [P] [US1] Playwright E2E checkbox de elegibilidad obligatorio en `frontend/test/e2e/us1-eligibility-required.spec.ts` (botón "Confirmar" queda deshabilitado sin marcar)
-- [ ] T056 [P] [US1] Playwright E2E kill switch redirect en `frontend/test/e2e/us1-kill-switch.spec.ts` (con kill switch activo, `/agendar` redirige a `/kill-switch-activo`)
-- [ ] T057 [P] [US1] axe-core AAA test en `frontend/test/e2e/us1-a11y.spec.ts` (landing, cada paso del wizard, pantalla de éxito, kill switch)
+- [X] T054 [P] [US1] Playwright E2E happy path `<90s` en `frontend/test/e2e/us1-happy-path.spec.ts` (emulador Pixel 5, red 3G lenta, incluye assertion de tiempo)
+- [X] T055 [P] [US1] Playwright E2E checkbox de elegibilidad obligatorio en `frontend/test/e2e/us1-eligibility-required.spec.ts` (botón "Confirmar" queda deshabilitado sin marcar)
+- [X] T056 [P] [US1] Playwright E2E kill switch redirect en `frontend/test/e2e/us1-kill-switch.spec.ts` (con kill switch activo, `/agendar` redirige a `/kill-switch-activo`)
+- [X] T057 [P] [US1] axe-core AAA test en `frontend/test/e2e/us1-a11y.spec.ts` (landing, cada paso del wizard, pantalla de éxito, kill switch)
 
 ### Implementation for User Story 1
 
@@ -202,9 +202,9 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 - [X] T090 [P] [US2] Contract test `reschedule` con kill switch activo → 409 `kill_switch_active` en `backend/test/contract/appointments-reschedule-kill-switch.spec.ts`
 - [X] T091 [P] [US2] Contract test `reschedule` sin cupo en nuevo slot → 409 `slot_full` en `backend/test/contract/appointments-reschedule-full.spec.ts`
 - [X] T092 [P] [US2] Integration test de concurrencia en reschedule (dos reagendamientos al mismo slot con 1 cupo) en `backend/test/integration/appointments-reschedule-concurrency.spec.ts`
-- [ ] T093 [P] [US2] Playwright E2E consulta + cancelación en `frontend/test/e2e/us2-cancel.spec.ts`
-- [ ] T094 [P] [US2] Playwright E2E reagendamiento en `frontend/test/e2e/us2-reschedule.spec.ts`
-- [ ] T095 [P] [US2] axe-core AAA test de `/consultar` en `frontend/test/e2e/us2-a11y.spec.ts`
+- [X] T093 [P] [US2] Playwright E2E consulta + cancelación en `frontend/test/e2e/us2-cancel.spec.ts`
+- [X] T094 [P] [US2] Playwright E2E reagendamiento en `frontend/test/e2e/us2-reschedule.spec.ts`
+- [X] T095 [P] [US2] axe-core AAA test de `/consultar` en `frontend/test/e2e/us2-a11y.spec.ts`
 
 ### Implementation for User Story 2
 
@@ -216,9 +216,9 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Frontend**
 
-- [ ] T099 [P] [US2] Crear `frontend/src/pages/consultar/index.astro` que en SSR chequea el kill switch y muestra el flujo completo pero deshabilita el botón "Reagendar" cuando `appointmentsDisabled=true`
-- [ ] T100 [P] [US2] Crear `frontend/src/components/lookup/LookupForm.tsx` (isla React) con dos pasos: (1) form cédula+código, (2) detalle con botones "Cancelar" y "Reagendar" — accesible AAA
-- [ ] T101 [P] [US2] Crear `frontend/src/components/lookup/RescheduleForm.tsx` reutilizando `StepSlot.tsx` (T077) para elegir nuevo slot y llamando al `PATCH .../reschedule`
+- [X] T099 [P] [US2] Crear `frontend/src/pages/consultar/index.astro` que en SSR chequea el kill switch y muestra el flujo completo pero deshabilita el botón "Reagendar" cuando `appointmentsDisabled=true`
+- [X] T100 [P] [US2] Crear `frontend/src/components/lookup/LookupForm.tsx` (isla React) con dos pasos: (1) form cédula+código, (2) detalle con botones "Cancelar" y "Reagendar" — accesible AAA
+- [X] T101 [P] [US2] Crear `frontend/src/components/lookup/RescheduleForm.tsx` reutilizando `StepSlot.tsx` (T077) para elegir nuevo slot y llamando al `PATCH .../reschedule`
 - [X] T102 [P] [US2] Actualizar OpenAPI YAML verificando que el generado desde Zod (T072) sigue coincidiendo tras los nuevos endpoints
 
 **Checkpoint**: US1 + US2 funcionan de manera independiente y en conjunto.
@@ -266,8 +266,8 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **E2E frontend**
 
-- [ ] T119 [P] [US3] Playwright E2E flujo admin completo en `frontend/test/e2e/us3-admin-flow.spec.ts` (login → crear slot → listar citas → descargar PDF → activar/desactivar kill switch)
-- [ ] T120 [P] [US3] axe-core AAA test de todo `/admin/**` en `frontend/test/e2e/us3-a11y.spec.ts`
+- [X] T119 [P] [US3] Playwright E2E flujo admin completo en `frontend/test/e2e/admin/us3-admin-flow.e2e.ts` (login → crear slot → listar citas → descargar PDF → activar/desactivar kill switch)
+- [X] T120 [P] [US3] axe-core AAA test de todo `/admin/**` en `frontend/test/e2e/admin/us3-a11y.e2e.ts`
 
 ### Implementation for User Story 3
 
@@ -300,13 +300,13 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Frontend — Panel admin**
 
-- [ ] T133 [P] [US3] Crear `frontend/src/pages/admin/login.astro` con `AdminLoginForm.tsx` (isla React accesible, autofocus, muestra error genérico en 401)
-- [ ] T134 [P] [US3] Crear `frontend/src/layouts/AdminLayout.astro` con navegación entre "Franjas", "Citas" y "Estado del sistema"; en el `<head>` marca `<meta name="robots" content="noindex">`
-- [ ] T135 [P] [US3] Crear `frontend/src/pages/admin/franjas.astro` + isla `FranjasPanel.tsx` (listar, crear con validación de horario, editar, deshabilitar con modal que muestra `cancelledAppointments`)
-- [ ] T136 [P] [US3] Crear `frontend/src/pages/admin/citas.astro` + isla `CitasPanel.tsx` con filtro por rango, tabla accesible (`<table>` con `<caption>`, `scope="col"`) y botón "Descargar PDF" que consume el endpoint
-- [ ] T137 [P] [US3] Crear `frontend/src/pages/admin/panel.astro` (home del panel) con tarjeta grande de kill switch (toggle con confirmación) y estado actual visible
-- [ ] T138 [P] [US3] Actualizar `frontend/src/lib/api-client.ts` con wrappers admin (`adminLogin`, `adminLogout`, CRUD franjas, listar citas, exportar PDF, toggle kill switch) usando `credentials: 'include'`
-- [ ] T139 [US3] Wire de guards de ruta en frontend: middleware Astro que redirige `/admin/*` a `/admin/login` cuando `GET /admin/me` responde 401
+- [X] T133 [P] [US3] Crear `frontend/src/pages/admin/login.astro` con `AdminLoginForm.tsx` (isla React accesible, autofocus, muestra error genérico en 401)
+- [X] T134 [P] [US3] Crear `frontend/src/layouts/AdminLayout.astro` con navegación entre "Franjas", "Citas" y "Estado del sistema"; en el `<head>` marca `<meta name="robots" content="noindex">`
+- [X] T135 [P] [US3] Crear `frontend/src/pages/admin/franjas.astro` + isla `FranjasPanel.tsx` (listar, crear con validación de horario, editar, deshabilitar con modal que muestra `cancelledAppointments`)
+- [X] T136 [P] [US3] Crear `frontend/src/pages/admin/citas.astro` + isla `CitasPanel.tsx` con filtro por rango, tabla accesible (`<table>` con `<caption>`, `scope="col"`) y botón "Descargar PDF" que consume el endpoint
+- [X] T137 [P] [US3] Crear `frontend/src/pages/admin/panel.astro` (home del panel) con tarjeta grande de kill switch (toggle con confirmación) y estado actual visible
+- [X] T138 [P] [US3] Actualizar `frontend/src/lib/api-client.ts` con wrappers admin (`adminLogin`, `adminLogout`, CRUD franjas, listar citas, exportar PDF, toggle kill switch) usando `credentials: 'include'`
+- [X] T139 [US3] Wire de guards de ruta en frontend: middleware Astro que redirige `/admin/*` a `/admin/login` cuando `GET /admin/me` responde 401
 
 **Checkpoint US3**: Panel admin operativo. US1 + US2 + US3 son plenamente funcionales.
 
@@ -322,11 +322,11 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 - [X] T143 [P] Añadir headers de seguridad en `backend/src/main.ts` con `helmet` (CSP restrictivo, HSTS solo prod); test integration verificando presencia de headers
 - [X] T144 [P] Endpoint `/health/live` y `/health/ready` diferenciados en `backend/src/modules/health/health.controller.ts` (ready incluye ping Postgres, live solo proceso vivo)
 - [X] T145 [P] Snapshot del OpenAPI generado contra `contracts/public-api.openapi.yaml` y `contracts/admin-api.openapi.yaml` en CI (job `openapi-check` en `.github/workflows/ci.yml`) — falla el build si divergen
-- [ ] T146 [P] Lighthouse mobile budget en `.github/workflows/ci.yml` con umbrales: Performance ≥90, Accessibility ≥95, Best Practices ≥90; corre sobre landing y `/agendar`
+- [X] T146 [P] Lighthouse mobile budget en `.github/workflows/ci.yml` con umbrales: Performance ≥90, Accessibility ≥95, Best Practices ≥90; corre sobre landing y `/agendar`
 - [X] T147 [P] Actualizar `README.md` raíz con: comandos `pnpm dev`/`pnpm test`/`pnpm build`, referencia a `specs/001-blood-donation-scheduling/quickstart.md`, y política de branches (Git Flow) según Constitución Principio VI
-- [ ] T148 [P] Añadir `CONTRIBUTING.md` breve indicando: TDD obligatorio, comentarios en español, checklist AAA + mobile antes de PR
-- [ ] T149 Correr `pnpm test:smoke` (Validaciones 1, 4, 6, 8, 10, 11 de `quickstart.md`) en verde end-to-end
-- [ ] T150 Verificar contrastes finales de la paleta con `pa11y` sobre landing, wizard, admin (ampliación de T146) y ajustar tokens si algún pair queda bajo 7:1
+- [X] T148 [P] Añadir `CONTRIBUTING.md` breve indicando: TDD obligatorio, comentarios en español, checklist AAA + mobile antes de PR
+- [X] T149 Correr `pnpm test:smoke` (Validaciones 1, 4, 6, 8, 10, 11 de `quickstart.md`) en verde end-to-end
+- [X] T150 Verificar contrastes finales de la paleta con `pa11y` sobre landing, wizard, admin (ampliación de T146) y ajustar tokens si algún pair queda bajo 7:1
 
 ---
 

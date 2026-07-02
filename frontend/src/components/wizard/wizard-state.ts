@@ -32,6 +32,9 @@ export const STEPS: readonly WizardStepMeta[] = [
 export interface WizardData {
   eligibilityDeclared: boolean;
   slotId: string | null;
+  slotDate: string | null;
+  slotStart: string | null;
+  slotEnd: string | null;
   firstName: string;
   lastName: string;
   idNumber: string;
@@ -114,6 +117,9 @@ export function createInitialState(): WizardState {
   const data: WizardData = {
     eligibilityDeclared: false,
     slotId: null,
+    slotDate: null,
+    slotStart: null,
+    slotEnd: null,
     firstName: '',
     lastName: '',
     idNumber: '',

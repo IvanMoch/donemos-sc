@@ -1,0 +1,7 @@
+{
+  "_comentario": "Config de pa11y para CI (T150). El runner de Ubuntu 24.04 ya no soporta el sandbox de user-namespaces de Chromium, por eso arrancamos con --no-sandbox y --disable-setuid-sandbox. Sin esto el navegador cae con SIGABRT antes de auditar.",
+  "chromeLaunchConfig": {
+    "args": ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+  },
+  "timeout": 60000
+}

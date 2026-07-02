@@ -4,25 +4,30 @@
 // Esta página NO está prerenderizada: se sirve SSR para poder consultar el
 // estado del kill switch en el servidor antes de renderizar (research §5).
 // Si `appointmentsDisabled=true`, redirigimos a /kill-switch-activo (SC-005).
-//
-// TODO(US1 backend): implementar la consulta a /api/v1/system/status.
-// Mientras Fase 2 backend no exista, servimos siempre el wizard (no hay
-// endpoint que devuelva el kill switch todavía). El apiClient (T037) ya
-// tiene el helper listo — solo faltará el fetch server-side aquí.
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { WizardShell } from '../../components/wizard/WizardShell';
+import { publicApi } from '../../lib/api';
 import '../../styles/wizard.css';
 import '../../styles/print.css';
 
-// TODO(US1 backend): server-side fetch a /api/v1/system/status.
-// Ejemplo del código final:
-//
-//   import { apiClient } from '../../lib/api-client';
-//   const status = await apiClient<{ appointmentsDisabled: boolean }>('/system/status');
-//   if (status?.appointmentsDisabled) {
-//     return Astro.redirect('/kill-switch-activo');
-//   }
+// SSR: si el kill switch está activo, redirigimos antes de renderizar.
+// Fallo tolerante y con timeout corto: si el backend no responde en 300ms,
+// dejamos pasar y mostramos el wizard — no queremos bloquear LCP en producción
+// por un backend lento, y el POST /appointments devolverá 503 apenas el donante
+// intente confirmar (el UI lo maneja).
+const SYSTEM_STATUS_TIMEOUT_MS = 300;
+try {
+  const status = await Promise.race([
+    publicApi.getSystemStatus(),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), SYSTEM_STATUS_TIMEOUT_MS)),
+  ]);
+  if (status?.appointmentsDisabled) {
+    return Astro.redirect('/kill-switch-activo');
+  }
+} catch (_err) {
+  // Silencioso a propósito — ver comentario arriba.
+}
 ---
 
 <BaseLayout

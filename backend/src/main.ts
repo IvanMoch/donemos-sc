@@ -24,6 +24,17 @@ async function bootstrap(): Promise<void> {
   app.use(helmet(helmetOptions()));
   app.use(cookieParser());
 
+  // CORS: en producción el frontend se sirve por el mismo origen (proxy nginx),
+  // pero en dev y CI el frontend vive en localhost:4321 y el backend en 3001.
+  // `credentials: true` es obligatorio para que la cookie `session` del admin
+  // viaje en fetch cross-origin (research §6). Restringimos a origins conocidos
+  // vía `CORS_ORIGINS` (lista separada por comas) y aceptamos cualquier
+  // localhost por defecto para no romper el flujo local.
+  const corsOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((s) => s.trim())
+    : [/^http:\/\/localhost:\d+$/];
+  app.enableCors({ origin: corsOrigins, credentials: true });
+
   // Todas las rutas públicas y admin viven bajo /api/v1 (Principio I).
   app.setGlobalPrefix('api/v1');
 

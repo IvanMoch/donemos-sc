@@ -9,35 +9,55 @@
  *    "ocupado" y el usuario no puede volver a disparar la acción.
  *  - Foco visible AAA lo aporta el plugin del tailwind.config.mjs
  *    (*:focus-visible: outline 3px offset 2px) — no hace falta duplicar aquí.
- *  - Contraste primary sobre paper = 8.71:1 (research §9).
  *
- * Sin variantes de estilo por ahora — el MVP solo requiere un botón primario.
- * Las variantes secundarias (ghost, danger) entran en el módulo del wizard
- * cuando se justifiquen.
+ * Variantes: `primary` (default, primary sobre paper, AAA 8.71:1),
+ * `secondary` (paper-warm sobre ink, AAA 15+), y `soft` (primary-50 sobre
+ * primary, AAA con dark red text sobre light pink). Cada variante define su
+ * propio color de fondo/texto/hover para que un consumidor NO tenga que
+ * pisar utilidades del layout base — pisar utilidades de misma categoría
+ * genera colisiones donde el navegador aplica la que quede última en el CSS
+ * generado (color contrast axe fallaba en el botón Cancelar de LookupForm
+ * porque `className="bg-primary-50 text-primary"` competía con las bases
+ * `bg-primary text-paper` sin ganar por especificidad).
  */
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+
+export type ButtonVariant = 'primary' | 'secondary' | 'soft';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   isLoading?: boolean;
+  variant?: ButtonVariant;
 }
 
-const BASE_CLASSES = [
+const LAYOUT_CLASSES = [
   'inline-flex items-center justify-center',
   'min-h-touch min-w-touch px-6 py-2',
   'rounded-md',
-  'bg-primary text-paper',
   'font-medium text-base',
   'transition-colors duration-[220ms] ease-in-out',
-  'hover:bg-primary-800',
   'disabled:cursor-not-allowed disabled:opacity-60',
 ].join(' ');
 
+const VARIANT_CLASSES: Record<ButtonVariant, string> = {
+  primary: 'bg-primary text-paper hover:bg-primary-800',
+  secondary: 'bg-paper-warm text-ink hover:bg-neutral-200',
+  // `soft` mantiene el mismo bg-primary-50 en hover porque saltar a
+  // bg-primary-100 (#F6D7DC) bajaba el contraste con text-primary a 6.75
+  // (falla WCAG AAA 7:1). En vez de cambiar el fondo, marcamos el hover
+  // con un ring — feedback visual sin sacrificar contraste.
+  soft: 'bg-primary-50 text-primary hover:ring-2 hover:ring-primary hover:ring-inset',
+};
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { children, isLoading = false, disabled, type, className, ...rest },
+  { children, isLoading = false, disabled, type, className, variant = 'primary', ...rest },
   ref,
 ) {
-  const composedClassName = className ? `${BASE_CLASSES} ${className}` : BASE_CLASSES;
+  const composedClassName = [
+    LAYOUT_CLASSES,
+    VARIANT_CLASSES[variant],
+    ...(className ? [className] : []),
+  ].join(' ');
 
   return (
     <button

@@ -33,9 +33,14 @@ const BASE_INPUT_CLASSES = [
 ].join(' ');
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
-  { label, error, hint, required, className, name, ...rest },
+  { label, error, hint, required, className, name, type, ...rest },
   ref,
 ) {
+  // Default explícito a 'text': pa11y (WCAG2AAA H98) rechaza inputs con
+  // autocomplete="username"|"family-name"|"given-name"... si no tienen un
+  // atributo `type` compatible con el "text control group". HTML asume text
+  // cuando falta, pero el chequeador estático no infiere ese default.
+  const resolvedType = type ?? 'text';
   const reactId = useId();
   const inputId = `${reactId}-${name ?? 'field'}`;
   const errorId = error ? `${inputId}-error` : undefined;
@@ -59,6 +64,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         ref={ref}
         id={inputId}
         name={name}
+        type={resolvedType}
         required={required}
         aria-required={required ? 'true' : undefined}
         aria-invalid={error ? 'true' : undefined}

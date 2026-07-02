@@ -1,0 +1,94 @@
+---
+/**
+ * AdminLayout — envoltorio HTML para las páginas del panel administrativo (T134).
+ *
+ * Diferencias con BaseLayout:
+ *  - Marca `<meta name="robots" content="noindex, nofollow">` (el panel nunca
+ *    debe salir en buscadores).
+ *  - Barra de navegación con enlaces a Franjas / Citas / Estado, y botón de
+ *    "Cerrar sesión" que hace POST /admin/auth/logout y redirige a /admin/login.
+ *  - Fondo neutro (no el paper-warm del sitio público) para diferenciar
+ *    visualmente el modo administrativo.
+ */
+import '../styles/global.css';
+import '../styles/tokens.css';
+import { LogoutButton } from '../components/admin/LogoutButton';
+
+interface Props {
+  title: string;
+  activeTab?: 'panel' | 'franjas' | 'citas';
+}
+
+const { title, activeTab } = Astro.props;
+const adminUser = Astro.locals.adminUser;
+
+const tabs = [
+  { id: 'panel', label: 'Estado del sistema', href: '/admin/panel' },
+  { id: 'franjas', label: 'Franjas horarias', href: '/admin/franjas' },
+  { id: 'citas', label: 'Citas', href: '/admin/citas' },
+] as const;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-paper text-ink font-sans antialiased">
+    <a
+      href="#main"
+      class="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-50 focus-visible:rounded-md focus-visible:bg-primary focus-visible:px-4 focus-visible:py-2 focus-visible:text-paper"
+    >
+      Saltar al contenido principal
+    </a>
+
+    <header class="border-b border-neutral-200 bg-paper-warm">
+      <div class="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col">
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary">
+            Panel administrativo
+          </p>
+          <p class="text-sm font-semibold text-ink">
+            Banco de Sangre · Hospital Central de San Cristóbal
+          </p>
+        </div>
+        {adminUser && (
+          <div class="flex items-center gap-3 text-sm text-ink-700">
+            <span>Sesión: <strong>{adminUser.username}</strong></span>
+            <LogoutButton client:load />
+          </div>
+        )}
+      </div>
+      <nav
+        aria-label="Secciones del panel"
+        class="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2"
+      >
+        {tabs.map((tab) => {
+          const active = activeTab === tab.id;
+          return (
+            <a
+              href={tab.href}
+              aria-current={active ? 'page' : undefined}
+              class={[
+                'inline-flex min-h-touch items-center rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                active
+                  ? 'bg-primary text-paper'
+                  : 'text-ink hover:bg-neutral-200',
+              ].join(' ')}
+            >
+              {tab.label}
+            </a>
+          );
+        })}
+      </nav>
+    </header>
+
+    <main id="main" tabindex="-1" class="mx-auto max-w-5xl px-4 py-8">
+      <slot />
+    </main>
+  </body>
+</html>

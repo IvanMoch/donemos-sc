@@ -10,12 +10,14 @@
  *    y anuncia el cambio con aria-live="polite" en una región oculta.
  *  - En status='success' renderiza <SuccessScreen /> (T081).
  *
- * NOTA sobre backend: mientras Fase 2 backend no exista, StepSlot muestra un
- * placeholder y StepConfirm no llama a POST /appointments. El submit fake
- * dispara submitError con un mensaje explicativo. Cuando el backend esté,
- * basta con conectar el fetch real en handleSubmit sin tocar el shell.
+ * Backend: en handleSubmit envía POST /api/v1/appointments vía `publicApi`.
+ * Los errores 400/409/503 se mapean a mensajes en español; cualquier otro
+ * caso muestra un texto genérico. FR-011 (auto-declaración) se garantiza
+ * en el reducer (no se puede avanzar sin marcarlo).
  */
 import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { publicApi } from '../../lib/api';
+import { ApiError } from '../../lib/api-client';
 import { Button } from '../ui/Button';
 import { StepConfirm } from './StepConfirm';
 import { StepIdentity } from './StepIdentity';
@@ -62,18 +64,30 @@ export function WizardShell(_props: WizardShellProps): JSX.Element {
 
   const handleSubmit = useCallback(async () => {
     dispatch(wizardActions.submit());
-    // TODO(US1 backend): reemplazar por POST /api/v1/appointments cuando
-    // Fase 2 backend cierre. El client apiClient() ya está listo (T037).
-    // Mientras tanto, emulamos el estado 'submitting' brevemente y
-    // devolvemos un error explícito para que el flujo se entienda al mirarlo
-    // en el navegador sin backend.
-    await new Promise((r) => setTimeout(r, 400));
-    dispatch(
-      wizardActions.submitError(
-        'El backend aún no está desplegado. La confirmación real llega cuando cierre la Fase 2 backend.',
-      ),
-    );
-  }, [dispatch]);
+    if (state.data.slotId === null) {
+      dispatch(wizardActions.submitError('Selecciona un horario antes de continuar.'));
+      return;
+    }
+    try {
+      const confirmacion = await publicApi.createAppointment({
+        firstName: state.data.firstName.trim(),
+        lastName: state.data.lastName.trim(),
+        idNumber: state.data.idNumber.trim().toUpperCase(),
+        slotId: state.data.slotId,
+        eligibilityDeclared: true as const,
+      });
+      dispatch(
+        wizardActions.submitSuccess({
+          code: confirmacion.code,
+          slotDate: confirmacion.slot.date,
+          slotStart: confirmacion.slot.startTime,
+          slotEnd: confirmacion.slot.endTime,
+        }),
+      );
+    } catch (err: unknown) {
+      dispatch(wizardActions.submitError(mensajeCreacion(err)));
+    }
+  }, [dispatch, state.data]);
 
   if (state.status === 'success' && state.appointment !== null) {
     return (
@@ -99,6 +113,7 @@ export function WizardShell(_props: WizardShellProps): JSX.Element {
 
       <div
         role="progressbar"
+        aria-label="Progreso del agendamiento"
         aria-valuenow={stepNumber}
         aria-valuemin={1}
         aria-valuemax={totalSteps}
@@ -151,9 +166,10 @@ export function WizardShell(_props: WizardShellProps): JSX.Element {
         ) : (
           <Button
             type="button"
+            variant="secondary"
             onClick={handleBack}
             disabled={state.status === 'submitting'}
-            className="bg-paper-warm text-ink hover:bg-neutral-200 sm:min-w-[8rem]"
+            className="sm:min-w-[8rem]"
           >
             Volver
           </Button>
@@ -188,6 +204,30 @@ interface StepPanelProps {
   onChange: (patch: Partial<WizardData>) => void;
   isSubmitting: boolean;
   error: string | null;
+}
+
+function mensajeCreacion(err: unknown): string {
+  if (err instanceof ApiError) {
+    const payload = err.payload as { error?: string; code?: string } | null;
+    const codigo = payload?.error ?? payload?.code;
+    switch (codigo) {
+      case 'duplicate_active_appointment':
+        return 'Ya existe una cita activa con esa cédula. Puedes consultarla en la pantalla de "Consultar mi cita".';
+      case 'slot_full':
+        return 'Ese horario acaba de agotarse. Elige otro y vuelve a intentar.';
+      case 'appointments_disabled':
+      case 'kill_switch_active':
+        return 'El agendamiento está temporalmente cerrado. Vuelve más tarde.';
+      case 'validation_failed':
+        return 'Revisa los datos ingresados. Alguno no cumple con el formato esperado.';
+      default:
+        if (err.status === 429) {
+          return 'Demasiados intentos en poco tiempo. Espera un momento y vuelve a intentar.';
+        }
+        return 'No pudimos confirmar la cita. Intenta de nuevo en unos segundos.';
+    }
+  }
+  return 'No pudimos confirmar la cita. Intenta de nuevo en unos segundos.';
 }
 
 function StepPanel({ stepId, data, onChange, isSubmitting, error }: StepPanelProps): JSX.Element {

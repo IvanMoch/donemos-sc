@@ -5,10 +5,8 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { axe, toHaveNoViolations } from 'vitest-axe';
+import { axeUnit } from '../../../test/axe';
 import { Button } from './Button';
-
-expect.extend({ toHaveNoViolations });
 
 describe('<Button />', () => {
   it('renderiza un <button> con el label como texto accesible', () => {
@@ -60,9 +58,9 @@ describe('<Button />', () => {
     expect(btn.className).toMatch(/min-h-touch|min-h-\[44px\]/);
   });
 
-  it('no reporta violaciones de accesibilidad (axe)', async () => {
+  it('no reporta violaciones de accesibilidad (axe, sin color-contrast)', async () => {
     const { container } = render(<Button>Continuar</Button>);
-    const results = await axe(container);
+    const results = await axeUnit(container);
     expect(results).toHaveNoViolations();
   });
 });

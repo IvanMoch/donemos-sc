@@ -16,6 +16,12 @@ import { fileURLToPath } from 'node:url';
 // para uso puntual desde tests que lo requieran vía config heredada.
 
 export default defineConfig({
+  // JSX automático de React 18: convierte `<div />` en `_jsx(...)` sin exigir
+  // `import React from 'react'` en cada archivo de test.
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react',
+  },
   resolve: {
     alias: {
       '@donemos/shared': fileURLToPath(new URL('../packages/shared/src/index.ts', import.meta.url)),

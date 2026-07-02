@@ -109,17 +109,17 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Backend**
 
-- [ ] T042 [P] [US1] Contract test `GET /api/v1/health` en `backend/test/contract/health.spec.ts`
-- [ ] T043 [P] [US1] Contract test `GET /api/v1/content/donation-info` en `backend/test/contract/content.spec.ts` que verifique presencia de 6 requisitos + 5 consideraciones, hospital name = "Hospital Central de San Cristóbal", mapUrl y schedule
-- [ ] T044 [P] [US1] Contract test `GET /api/v1/system/status` en `backend/test/contract/system-status-public.spec.ts`
-- [ ] T045 [P] [US1] Contract test `GET /api/v1/slots` en `backend/test/contract/slots-public.spec.ts` (filtros `from`/`to`, orden por fecha/hora, solo `is_disabled=false` y con cupo)
-- [ ] T046 [P] [US1] Contract test `POST /api/v1/appointments` happy path en `backend/test/contract/appointments-create.spec.ts` (201 con `code` regex, decremento de capacidad, `eligibility_declared_at` persistido)
-- [ ] T047 [P] [US1] Contract test `POST /api/v1/appointments` error 409 `duplicate_active_appointment` en `backend/test/contract/appointments-duplicate.spec.ts`
-- [ ] T048 [P] [US1] Contract test `POST /api/v1/appointments` error 409 `slot_full` en `backend/test/contract/appointments-full.spec.ts`
-- [ ] T049 [P] [US1] Contract test `POST /api/v1/appointments` error 503 `appointments_disabled` cuando kill switch activo en `backend/test/contract/appointments-kill-switch.spec.ts`
-- [ ] T050 [P] [US1] Contract test `POST /api/v1/appointments` error 400 cuando `eligibilityDeclared=false` en `backend/test/contract/appointments-eligibility.spec.ts`
-- [ ] T051 [P] [US1] Contract test rate limit `POST /api/v1/appointments` en `backend/test/contract/appointments-throttle.spec.ts` (31ª request/min → 429)
-- [ ] T052 [P] [US1] Integration test de **concurrencia** SERIALIZABLE en `backend/test/integration/appointments-concurrency.spec.ts` (slot capacity=1, dos POST simultáneos → uno 201, otro 409; SC-009)
+- [X] T042 [P] [US1] Contract test `GET /api/v1/health` en `backend/test/contract/health.spec.ts`
+- [X] T043 [P] [US1] Contract test `GET /api/v1/content/donation-info` en `backend/test/contract/content.spec.ts` que verifique presencia de 6 requisitos + 5 consideraciones, hospital name = "Hospital Central de San Cristóbal", mapUrl y schedule
+- [X] T044 [P] [US1] Contract test `GET /api/v1/system/status` en `backend/test/contract/system-status-public.spec.ts`
+- [X] T045 [P] [US1] Contract test `GET /api/v1/slots` en `backend/test/contract/slots-public.spec.ts` (filtros `from`/`to`, orden por fecha/hora, solo `is_disabled=false` y con cupo)
+- [X] T046 [P] [US1] Contract test `POST /api/v1/appointments` happy path en `backend/test/contract/appointments-create.spec.ts` (201 con `code` regex, decremento de capacidad, `eligibility_declared_at` persistido)
+- [X] T047 [P] [US1] Contract test `POST /api/v1/appointments` error 409 `duplicate_active_appointment` en `backend/test/contract/appointments-duplicate.spec.ts`
+- [X] T048 [P] [US1] Contract test `POST /api/v1/appointments` error 409 `slot_full` en `backend/test/contract/appointments-full.spec.ts`
+- [X] T049 [P] [US1] Contract test `POST /api/v1/appointments` error 503 `appointments_disabled` cuando kill switch activo en `backend/test/contract/appointments-kill-switch.spec.ts`
+- [X] T050 [P] [US1] Contract test `POST /api/v1/appointments` error 400 cuando `eligibilityDeclared=false` en `backend/test/contract/appointments-eligibility.spec.ts`
+- [X] T051 [P] [US1] Contract test rate limit `POST /api/v1/appointments` en `backend/test/contract/appointments-throttle.spec.ts` (31ª request/min → 429)
+- [X] T052 [P] [US1] Integration test de **concurrencia** SERIALIZABLE en `backend/test/integration/appointments-concurrency.spec.ts` (slot capacity=1, dos POST simultáneos → uno 201, otro 409; SC-009)
 
 **Frontend**
 
@@ -133,33 +133,33 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Backend — Content module**
 
-- [ ] T058 [P] [US1] Crear archivos JSON de contenido en `backend/src/modules/content/data/requirements.es.json` y `backend/src/modules/content/data/exclusions.es.json` con los textos exactos de `spec.md > Contenido Informativo`
-- [ ] T059 [P] [US1] Crear `backend/src/modules/content/content.service.ts` que lee los JSON y expone `getDonationInfo()`; incluir hospital name, mapUrl, schedule constantes
-- [ ] T060 [US1] Crear `backend/src/modules/content/content.controller.ts` con `GET /content/donation-info`
-- [ ] T061 [US1] Registrar `ContentModule` en `AppModule` (`backend/src/modules/content/content.module.ts` + import en `backend/src/app.module.ts`)
+- [X] T058 [P] [US1] Crear archivos JSON de contenido en `backend/src/modules/content/data/requirements.es.json` y `backend/src/modules/content/data/exclusions.es.json` con los textos exactos de `spec.md > Contenido Informativo`
+- [X] T059 [P] [US1] Crear `backend/src/modules/content/content.service.ts` que lee los JSON y expone `getDonationInfo()`; incluir hospital name, mapUrl, schedule constantes
+- [X] T060 [US1] Crear `backend/src/modules/content/content.controller.ts` con `GET /content/donation-info`
+- [X] T061 [US1] Registrar `ContentModule` en `AppModule` (`backend/src/modules/content/content.module.ts` + import en `backend/src/app.module.ts`)
 
 **Backend — System status público**
 
-- [ ] T062 [US1] Crear `backend/src/modules/system-state/system-state.controller.ts` con `GET /system/status` que consume `SystemStateService` (T028)
-- [ ] T063 [US1] Registrar `SystemStateModule` en `AppModule`
+- [X] T062 [US1] Crear `backend/src/modules/system-state/system-state.controller.ts` con `GET /system/status` que consume `SystemStateService` (T028)
+- [X] T063 [US1] Registrar `SystemStateModule` en `AppModule`
 
 **Backend — Slots público**
 
-- [ ] T064 [P] [US1] Crear `backend/src/modules/slots/slots.repository.ts` con método `findPublic({ from, to })` que devuelve slots con `remainingCapacity` computado; test unitario previo con mock Prisma
-- [ ] T065 [US1] Crear `backend/src/modules/slots/slots.service.ts` que orquesta el repo y aplica ventana hoy+30d default
-- [ ] T066 [US1] Crear `backend/src/modules/slots/slots.controller.ts` con `GET /slots`
-- [ ] T067 [US1] Health module + endpoint `GET /health` en `backend/src/modules/health/*` (Postgres ping)
+- [X] T064 [P] [US1] Crear `backend/src/modules/slots/slots.repository.ts` con método `findPublic({ from, to })` que devuelve slots con `remainingCapacity` computado; test unitario previo con mock Prisma
+- [X] T065 [US1] Crear `backend/src/modules/slots/slots.service.ts` que orquesta el repo y aplica ventana hoy+30d default
+- [X] T066 [US1] Crear `backend/src/modules/slots/slots.controller.ts` con `GET /slots`
+- [X] T067 [US1] Health module + endpoint `GET /health` en `backend/src/modules/health/*` (Postgres ping)
 
 **Backend — Appointments público (creación)**
 
-- [ ] T068 [P] [US1] Crear `backend/src/modules/appointments/appointments.repository.ts` con método `createInTransaction(dto, generatedCode)` que abre transacción SERIALIZABLE, `SELECT ... FOR UPDATE`, valida cupo, valida único activo por cédula, inserta cita — test unitario con transaction abstraction previo
-- [ ] T069 [US1] Crear `backend/src/modules/appointments/appointments.service.ts` orquestando: normalización de cédula (T032), generación de `code` (T031), llamada al repo, mapeo del error a 409 `duplicate_active_appointment` o `slot_full`
-- [ ] T070 [US1] Crear `backend/src/modules/appointments/appointments.controller.ts` con `POST /appointments` protegido por `@ProtectedByKillSwitch()` y `@Throttle(30, 60)`
-- [ ] T071 [US1] Registrar `SlotsModule` y `AppointmentsModule` en `AppModule`
+- [X] T068 [P] [US1] Crear `backend/src/modules/appointments/appointments.repository.ts` con método `createInTransaction(dto, generatedCode)` que abre transacción SERIALIZABLE, `SELECT ... FOR UPDATE`, valida cupo, valida único activo por cédula, inserta cita — test unitario con transaction abstraction previo
+- [X] T069 [US1] Crear `backend/src/modules/appointments/appointments.service.ts` orquestando: normalización de cédula (T032), generación de `code` (T031), llamada al repo, mapeo del error a 409 `duplicate_active_appointment` o `slot_full`
+- [X] T070 [US1] Crear `backend/src/modules/appointments/appointments.controller.ts` con `POST /appointments` protegido por `@ProtectedByKillSwitch()` y `@Throttle(30, 60)`
+- [X] T071 [US1] Registrar `SlotsModule` y `AppointmentsModule` en `AppModule`
 
 **Backend — OpenAPI generation**
 
-- [ ] T072 [US1] Configurar generación de `contracts/public-api.openapi.yaml` verificado desde los DTOs Zod en `backend/src/scripts/generate-openapi.ts` (uso de `@anatine/zod-openapi`); añadir script `pnpm --filter backend openapi:check` que falla si el YAML actual no coincide con el generado
+- [X] T072 [US1] Configurar generación de `contracts/public-api.openapi.yaml` verificado desde los DTOs Zod en `backend/src/scripts/generate-openapi.ts` (uso de `@anatine/zod-openapi`); añadir script `pnpm --filter backend openapi:check` que falla si el YAML actual no coincide con el generado
 
 **Frontend — Landing**
 

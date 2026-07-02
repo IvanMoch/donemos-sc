@@ -1,0 +1,163 @@
+openapi: 3.1.0
+info:
+  title: Donemos San Cristóbal — Public API (generado desde Zod)
+  version: 1.0.0
+  description: Contrato derivado de los esquemas Zod compartidos. No editar a mano.
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Servicio operativo
+  /content/donation-info:
+    get:
+      summary: Requisitos y criterios de exclusión (FR-001, FR-002)
+      responses:
+        "200":
+          description: Contenido informativo
+  /system/status:
+    get:
+      summary: Estado global del sistema (kill switch)
+      responses:
+        "200":
+          description: Estado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemStatus"
+  /slots:
+    get:
+      summary: Franjas con cupo dentro de la ventana pública (FR-004, FR-013)
+      responses:
+        "200":
+          description: Lista de franjas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicSlot"
+  /appointments:
+    post:
+      summary: Crear cita (FR-005..FR-008, FR-012)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAppointmentRequest"
+      responses:
+        "201":
+          description: Cita creada
+        "400":
+          description: Datos inválidos
+        "409":
+          description: Cédula ya con cita activa, o franja sin cupo
+        "429":
+          description: Rate limit excedido
+        "503":
+          description: Kill switch activo
+components:
+  schemas:
+    CreateAppointmentRequest:
+      type:
+        - object
+      properties:
+        firstName:
+          type:
+            - string
+          minLength: 1
+          maxLength: 60
+        lastName:
+          type:
+            - string
+          minLength: 1
+          maxLength: 60
+        idNumber:
+          type:
+            - string
+        slotId:
+          type:
+            - string
+          format: uuid
+        eligibilityDeclared:
+          type:
+            - boolean
+          enum:
+            - true
+      required:
+        - firstName
+        - lastName
+        - idNumber
+        - slotId
+        - eligibilityDeclared
+    LookupRequest:
+      type:
+        - object
+      properties:
+        code:
+          type:
+            - string
+          minLength: 10
+          maxLength: 10
+          pattern: ^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{10}$
+        idNumber:
+          type:
+            - string
+      required:
+        - code
+        - idNumber
+    PublicSlot:
+      type:
+        - object
+      properties:
+        id:
+          type:
+            - string
+          format: uuid
+        date:
+          type:
+            - string
+        startTime:
+          type:
+            - string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        endTime:
+          type:
+            - string
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        remainingCapacity:
+          type:
+            - integer
+          minimum: 0
+      required:
+        - id
+        - date
+        - startTime
+        - endTime
+        - remainingCapacity
+    SystemStatus:
+      type:
+        - object
+      properties:
+        appointmentsDisabled:
+          type:
+            - boolean
+        reason:
+          type:
+            - string
+            - "null"
+      required:
+        - appointmentsDisabled
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes: {}
+  links: {}
+  callbacks: {}
+tags: []
+servers:
+  - url: /api/v1

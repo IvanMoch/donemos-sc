@@ -27,7 +27,7 @@ describe('LoggingInterceptor', () => {
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
-    const [campos] = spy.mock.calls[0];
+    const campos = spy.mock.calls[0]?.[0];
     expect(campos).toEqual(
       expect.objectContaining({
         request_id: expect.any(String),

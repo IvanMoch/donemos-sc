@@ -1,0 +1,64 @@
+---
+/**
+ * BaseLayout — envoltorio HTML común a todas las páginas del sitio.
+ *
+ * Cumple los requisitos NO-NEGOCIABLES del Principio III (AAA):
+ *  - html lang="es" para lectores de pantalla.
+ *  - meta viewport correcto para mobile-first (Principio VIII).
+ *  - Skip link visible al recibir foco (SC 2.4.1 Bypass Blocks).
+ *  - <main id="main"> con role implícito y tabindex="-1" para permitir foco
+ *    programático al llegar por el skip link.
+ *  - Encabezado con el nombre del banco (contexto institucional).
+ *  - <ClientRouter /> de Astro para animaciones de View Transitions con
+ *    fallback nativo cuando el navegador no las soporte y respeto a
+ *    prefers-reduced-motion vía tokens.css.
+ */
+import '../styles/global.css';
+import '../styles/tokens.css';
+import { ClientRouter } from 'astro:transitions';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <ClientRouter />
+  </head>
+  <body class="min-h-screen bg-paper text-ink font-sans antialiased">
+    <a
+      href="#main"
+      class="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-50 focus-visible:rounded-md focus-visible:bg-primary focus-visible:px-4 focus-visible:py-2 focus-visible:text-paper"
+    >
+      Saltar al contenido principal
+    </a>
+
+    <header class="border-b border-neutral-200 bg-paper-warm">
+      <div class="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
+        <p class="text-sm font-semibold text-ink">
+          Banco de Sangre &middot; Hospital Central de San Cristóbal
+        </p>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1" class="mx-auto max-w-3xl px-4 py-8">
+      <slot />
+    </main>
+
+    <footer class="mt-16 border-t border-neutral-200">
+      <div class="mx-auto max-w-3xl px-4 py-6 text-sm text-ink-600">
+        &copy; {new Date().getFullYear()} Hospital Central de San Cristóbal — Táchira, Venezuela.
+      </div>
+    </footer>
+  </body>
+</html>

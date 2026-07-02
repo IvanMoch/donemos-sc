@@ -37,6 +37,9 @@ const config: Config = {
       ...proyectoBase,
       displayName: 'contract',
       testMatch: ['<rootDir>/test/contract/**/*.spec.ts'],
+      // Los contract tests arrancan la app real contra Postgres efímero: el
+      // setup amplía el timeout como en integration.
+      setupFilesAfterEnv: ['<rootDir>/test/contract/jest.setup.ts'],
     },
     {
       ...proyectoBase,

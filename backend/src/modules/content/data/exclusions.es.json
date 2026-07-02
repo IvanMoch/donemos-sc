@@ -1,0 +1,27 @@
+[
+  {
+    "title": "Tatuajes y piercings",
+    "description": "Sí puedes donar, siempre que haya pasado al menos 1 año desde el último.",
+    "kind": "conditional"
+  },
+  {
+    "title": "Alcohol",
+    "description": "Evita el consumo entre 48 y 72 horas antes de la donación.",
+    "kind": "conditional"
+  },
+  {
+    "title": "Salud crónica",
+    "description": "No es posible donar si has tenido hepatitis B o C, VIH, sífilis o problemas cardíacos graves.",
+    "kind": "excluding"
+  },
+  {
+    "title": "Medicamentos",
+    "description": "Si estás bajo tratamiento, infórmalo en la entrevista médica presencial.",
+    "kind": "conditional"
+  },
+  {
+    "title": "Consulta los tiempos de espera",
+    "description": "Si acabas de pasar una infección, te vacunaste recientemente o ya donaste hace poco, consulta los tiempos de espera con el personal del banco.",
+    "kind": "special_section"
+  }
+]

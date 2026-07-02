@@ -3,7 +3,12 @@
  * Verifica la lectura del singleton y el cacheo de 5 s (research §5).
  */
 import { PrismaService } from '../../common/prisma/prisma.service';
+import type { AdminAuditLogService } from '../admin/audit/admin-audit-log.service';
 import { SystemStateService } from './system-state.service';
+
+function auditMock(): AdminAuditLogService {
+  return { record: jest.fn().mockResolvedValue(undefined) } as unknown as AdminAuditLogService;
+}
 
 function prismaMock(row: { appointmentsDisabled: boolean; disabledReason: string | null } | null) {
   return {
@@ -16,7 +21,7 @@ describe('SystemStateService', () => {
 
   it('lee el estado del singleton', async () => {
     const prisma = prismaMock({ appointmentsDisabled: true, disabledReason: 'Mantenimiento' });
-    const service = new SystemStateService(prisma);
+    const service = new SystemStateService(prisma, auditMock());
     await expect(service.getState()).resolves.toEqual({
       appointmentsDisabled: true,
       reason: 'Mantenimiento',
@@ -24,14 +29,14 @@ describe('SystemStateService', () => {
   });
 
   it('devuelve estado por defecto (habilitado) si no hay fila', async () => {
-    const service = new SystemStateService(prismaMock(null));
+    const service = new SystemStateService(prismaMock(null), auditMock());
     await expect(service.getState()).resolves.toEqual({ appointmentsDisabled: false, reason: null });
   });
 
   it('cachea la lectura durante 5 s (una sola consulta)', async () => {
     jest.useFakeTimers();
     const prisma = prismaMock({ appointmentsDisabled: false, disabledReason: null });
-    const service = new SystemStateService(prisma);
+    const service = new SystemStateService(prisma, auditMock());
 
     await service.getState();
     jest.advanceTimersByTime(4000);
@@ -45,7 +50,7 @@ describe('SystemStateService', () => {
 
   it('invalidate() fuerza una relectura inmediata', async () => {
     const prisma = prismaMock({ appointmentsDisabled: false, disabledReason: null });
-    const service = new SystemStateService(prisma);
+    const service = new SystemStateService(prisma, auditMock());
     await service.getState();
     service.invalidate();
     await service.getState();

@@ -13,12 +13,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { KillSwitchGuard } from './common/guards/kill-switch.guard';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { AuditModule } from './modules/admin/audit/audit.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { ContentModule } from './modules/content/content.module';
 import { HealthModule } from './modules/health/health.module';
@@ -28,13 +31,16 @@ import { SystemStateModule } from './modules/system-state/system-state.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 30 }]),
     PrismaModule,
+    AuditModule,
     SystemStateModule,
     ContentModule,
     HealthModule,
     SlotsModule,
     AppointmentsModule,
+    AdminModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

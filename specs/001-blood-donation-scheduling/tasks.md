@@ -193,15 +193,15 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 ### Tests for User Story 2 (TDD) ⚠️
 
-- [ ] T084 [P] [US2] Contract test `POST /api/v1/appointments/lookup` happy path en `backend/test/contract/appointments-lookup.spec.ts`
-- [ ] T085 [P] [US2] Contract test `POST /api/v1/appointments/lookup` cédula/código incorrectos → 404 genérico en `backend/test/contract/appointments-lookup-notfound.spec.ts` (FR-016)
-- [ ] T086 [P] [US2] Contract test rate limit lookup en `backend/test/contract/appointments-lookup-throttle.spec.ts` (11ª request/min → 429)
-- [ ] T087 [P] [US2] Contract test `POST /api/v1/appointments/{code}/cancel` en `backend/test/contract/appointments-cancel.spec.ts` (estado `cancelled_by_donor`, cupo liberado)
-- [ ] T088 [P] [US2] Contract test `cancel` con kill switch activo sigue funcionando (FR-023b) en `backend/test/contract/appointments-cancel-with-kill-switch.spec.ts`
-- [ ] T089 [P] [US2] Contract test `PATCH /api/v1/appointments/{code}/reschedule` happy path en `backend/test/contract/appointments-reschedule.spec.ts` (código conservado, cupo viejo libre, cupo nuevo consumido)
-- [ ] T090 [P] [US2] Contract test `reschedule` con kill switch activo → 409 `kill_switch_active` en `backend/test/contract/appointments-reschedule-kill-switch.spec.ts`
-- [ ] T091 [P] [US2] Contract test `reschedule` sin cupo en nuevo slot → 409 `slot_full` en `backend/test/contract/appointments-reschedule-full.spec.ts`
-- [ ] T092 [P] [US2] Integration test de concurrencia en reschedule (dos reagendamientos al mismo slot con 1 cupo) en `backend/test/integration/appointments-reschedule-concurrency.spec.ts`
+- [X] T084 [P] [US2] Contract test `POST /api/v1/appointments/lookup` happy path en `backend/test/contract/appointments-lookup.spec.ts`
+- [X] T085 [P] [US2] Contract test `POST /api/v1/appointments/lookup` cédula/código incorrectos → 404 genérico en `backend/test/contract/appointments-lookup-notfound.spec.ts` (FR-016)
+- [X] T086 [P] [US2] Contract test rate limit lookup en `backend/test/contract/appointments-lookup-throttle.spec.ts` (11ª request/min → 429)
+- [X] T087 [P] [US2] Contract test `POST /api/v1/appointments/{code}/cancel` en `backend/test/contract/appointments-cancel.spec.ts` (estado `cancelled_by_donor`, cupo liberado)
+- [X] T088 [P] [US2] Contract test `cancel` con kill switch activo sigue funcionando (FR-023b) en `backend/test/contract/appointments-cancel-with-kill-switch.spec.ts`
+- [X] T089 [P] [US2] Contract test `PATCH /api/v1/appointments/{code}/reschedule` happy path en `backend/test/contract/appointments-reschedule.spec.ts` (código conservado, cupo viejo libre, cupo nuevo consumido)
+- [X] T090 [P] [US2] Contract test `reschedule` con kill switch activo → 409 `kill_switch_active` en `backend/test/contract/appointments-reschedule-kill-switch.spec.ts`
+- [X] T091 [P] [US2] Contract test `reschedule` sin cupo en nuevo slot → 409 `slot_full` en `backend/test/contract/appointments-reschedule-full.spec.ts`
+- [X] T092 [P] [US2] Integration test de concurrencia en reschedule (dos reagendamientos al mismo slot con 1 cupo) en `backend/test/integration/appointments-reschedule-concurrency.spec.ts`
 - [ ] T093 [P] [US2] Playwright E2E consulta + cancelación en `frontend/test/e2e/us2-cancel.spec.ts`
 - [ ] T094 [P] [US2] Playwright E2E reagendamiento en `frontend/test/e2e/us2-reschedule.spec.ts`
 - [ ] T095 [P] [US2] axe-core AAA test de `/consultar` en `frontend/test/e2e/us2-a11y.spec.ts`
@@ -210,16 +210,16 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Backend**
 
-- [ ] T096 [P] [US2] Añadir métodos `findByCodeAndIdNumber(code, idNumber)`, `cancelByDonor(appointment)`, `rescheduleInTransaction(appointment, newSlotId)` en `backend/src/modules/appointments/appointments.repository.ts` — cada método con test unitario previo (mock Prisma)
-- [ ] T097 [US2] Ampliar `backend/src/modules/appointments/appointments.service.ts` con métodos `lookup`, `cancel`, `reschedule` (normaliza cédula, maneja not-found genérico, `reschedule` valida kill switch)
-- [ ] T098 [US2] Ampliar `backend/src/modules/appointments/appointments.controller.ts` con `POST /appointments/lookup` (throttle 10/min), `POST /appointments/:code/cancel`, `PATCH /appointments/:code/reschedule` (protegido por `@ProtectedByKillSwitch()`)
+- [X] T096 [P] [US2] Añadir métodos `findByCodeAndIdNumber(code, idNumber)`, `cancelByDonor(appointment)`, `rescheduleInTransaction(appointment, newSlotId)` en `backend/src/modules/appointments/appointments.repository.ts` — cada método con test unitario previo (mock Prisma)
+- [X] T097 [US2] Ampliar `backend/src/modules/appointments/appointments.service.ts` con métodos `lookup`, `cancel`, `reschedule` (normaliza cédula, maneja not-found genérico, `reschedule` valida kill switch)
+- [X] T098 [US2] Ampliar `backend/src/modules/appointments/appointments.controller.ts` con `POST /appointments/lookup` (throttle 10/min), `POST /appointments/:code/cancel`, `PATCH /appointments/:code/reschedule` (protegido por `@ProtectedByKillSwitch()`)
 
 **Frontend**
 
 - [ ] T099 [P] [US2] Crear `frontend/src/pages/consultar/index.astro` que en SSR chequea el kill switch y muestra el flujo completo pero deshabilita el botón "Reagendar" cuando `appointmentsDisabled=true`
 - [ ] T100 [P] [US2] Crear `frontend/src/components/lookup/LookupForm.tsx` (isla React) con dos pasos: (1) form cédula+código, (2) detalle con botones "Cancelar" y "Reagendar" — accesible AAA
 - [ ] T101 [P] [US2] Crear `frontend/src/components/lookup/RescheduleForm.tsx` reutilizando `StepSlot.tsx` (T077) para elegir nuevo slot y llamando al `PATCH .../reschedule`
-- [ ] T102 [P] [US2] Actualizar OpenAPI YAML verificando que el generado desde Zod (T072) sigue coincidiendo tras los nuevos endpoints
+- [X] T102 [P] [US2] Actualizar OpenAPI YAML verificando que el generado desde Zod (T072) sigue coincidiendo tras los nuevos endpoints
 
 **Checkpoint**: US1 + US2 funcionan de manera independiente y en conjunto.
 
@@ -235,34 +235,34 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Auth**
 
-- [ ] T103 [P] [US3] Contract test `POST /api/v1/admin/auth/login` happy path (Set-Cookie con HttpOnly, Secure, SameSite=Strict, TTL 8h) en `backend/test/contract/admin-login.spec.ts`
-- [ ] T104 [P] [US3] Contract test login fallido → 401 en `backend/test/contract/admin-login-invalid.spec.ts`
-- [ ] T105 [P] [US3] Contract test rate limit login (5ª failed request/min → 429) en `backend/test/contract/admin-login-throttle.spec.ts`
-- [ ] T106 [P] [US3] Contract test `POST /admin/auth/logout` y `GET /admin/me` en `backend/test/contract/admin-me.spec.ts`
-- [ ] T107 [P] [US3] Integration test bcrypt cost 12 y hashing seguro en `backend/test/integration/admin-password-hashing.spec.ts`
+- [X] T103 [P] [US3] Contract test `POST /api/v1/admin/auth/login` happy path (Set-Cookie con HttpOnly, Secure, SameSite=Strict, TTL 8h) en `backend/test/contract/admin-login.spec.ts`
+- [X] T104 [P] [US3] Contract test login fallido → 401 en `backend/test/contract/admin-login-invalid.spec.ts`
+- [X] T105 [P] [US3] Contract test rate limit login (5ª failed request/min → 429) en `backend/test/contract/admin-login-throttle.spec.ts`
+- [X] T106 [P] [US3] Contract test `POST /admin/auth/logout` y `GET /admin/me` en `backend/test/contract/admin-me.spec.ts`
+- [X] T107 [P] [US3] Integration test bcrypt cost 12 y hashing seguro en `backend/test/integration/admin-password-hashing.spec.ts`
 
 **Slots admin**
 
-- [ ] T108 [P] [US3] Contract test `GET /admin/slots` con filtros y `includeDisabled` en `backend/test/contract/admin-slots-list.spec.ts`
-- [ ] T109 [P] [US3] Contract test `POST /admin/slots` happy path L–V 7:00–12:00 en `backend/test/contract/admin-slots-create.spec.ts`
-- [ ] T110 [P] [US3] Contract test `POST /admin/slots` fuera de horario sin `isExceptionHours` → 400 en `backend/test/contract/admin-slots-out-of-hours.spec.ts`
-- [ ] T111 [P] [US3] Contract test `POST /admin/slots` con `isExceptionHours=true` acepta sábado y registra excepción en `backend/test/contract/admin-slots-exception.spec.ts`
-- [ ] T112 [P] [US3] Contract test `PATCH /admin/slots/:id` con `capacity < usedCapacity` → 409 en `backend/test/contract/admin-slots-update-conflict.spec.ts`
-- [ ] T113 [P] [US3] Contract test `POST /admin/slots/:id/disable` con citas activas → todas quedan `cancelled_by_bank` y `cancelledAppointments` correcto en `backend/test/contract/admin-slots-disable.spec.ts`
+- [X] T108 [P] [US3] Contract test `GET /admin/slots` con filtros y `includeDisabled` en `backend/test/contract/admin-slots-list.spec.ts`
+- [X] T109 [P] [US3] Contract test `POST /admin/slots` happy path L–V 7:00–12:00 en `backend/test/contract/admin-slots-create.spec.ts`
+- [X] T110 [P] [US3] Contract test `POST /admin/slots` fuera de horario sin `isExceptionHours` → 400 en `backend/test/contract/admin-slots-out-of-hours.spec.ts`
+- [X] T111 [P] [US3] Contract test `POST /admin/slots` con `isExceptionHours=true` acepta sábado y registra excepción en `backend/test/contract/admin-slots-exception.spec.ts`
+- [X] T112 [P] [US3] Contract test `PATCH /admin/slots/:id` con `capacity < usedCapacity` → 409 en `backend/test/contract/admin-slots-update-conflict.spec.ts`
+- [X] T113 [P] [US3] Contract test `POST /admin/slots/:id/disable` con citas activas → todas quedan `cancelled_by_bank` y `cancelledAppointments` correcto en `backend/test/contract/admin-slots-disable.spec.ts`
 
 **Appointments admin y PDF**
 
-- [ ] T114 [P] [US3] Contract test `GET /admin/appointments` con rango y filtro por status en `backend/test/contract/admin-appointments-list.spec.ts`
-- [ ] T115 [P] [US3] Contract test `GET /admin/appointments/export.pdf` en `backend/test/contract/admin-appointments-pdf.spec.ts` (verificar `Content-Type: application/pdf`, magic bytes `%PDF-`, y que el PDF contiene el nombre del hospital y las cabeceras de columnas)
+- [X] T114 [P] [US3] Contract test `GET /admin/appointments` con rango y filtro por status en `backend/test/contract/admin-appointments-list.spec.ts`
+- [X] T115 [P] [US3] Contract test `GET /admin/appointments/export.pdf` en `backend/test/contract/admin-appointments-pdf.spec.ts` (verificar `Content-Type: application/pdf`, magic bytes `%PDF-`, y que el PDF contiene el nombre del hospital y las cabeceras de columnas)
 
 **Kill switch**
 
-- [ ] T116 [P] [US3] Contract test `GET /admin/system-state` en `backend/test/contract/admin-system-state.spec.ts`
-- [ ] T117 [P] [US3] Contract test `POST /admin/system-state/kill-switch` activar/desactivar en `backend/test/contract/admin-kill-switch.spec.ts`
+- [X] T116 [P] [US3] Contract test `GET /admin/system-state` en `backend/test/contract/admin-system-state.spec.ts`
+- [X] T117 [P] [US3] Contract test `POST /admin/system-state/kill-switch` activar/desactivar en `backend/test/contract/admin-kill-switch.spec.ts`
 
 **Audit log**
 
-- [ ] T118 [P] [US3] Integration test que verifica que cada mutación admin (login, create slot, disable slot, kill switch on/off, PDF export) inserta una fila en `admin_audit_log` en `backend/test/integration/admin-audit-log.spec.ts`
+- [X] T118 [P] [US3] Integration test que verifica que cada mutación admin (login, create slot, disable slot, kill switch on/off, PDF export) inserta una fila en `admin_audit_log` en `backend/test/integration/admin-audit-log.spec.ts`
 
 **E2E frontend**
 
@@ -273,30 +273,30 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Backend — Auth**
 
-- [ ] T121 [P] [US3] Crear `backend/src/modules/admin/auth/admin-auth.service.ts` con `login(username, password)` bcrypt-verify + JWT firm; test unitario previo
-- [ ] T122 [US3] Crear `backend/src/modules/admin/auth/admin-auth.controller.ts` con `POST /admin/auth/login`, `POST /admin/auth/logout`, `GET /admin/me`; setear cookie HttpOnly Secure SameSite=Strict TTL 8h
-- [ ] T123 [US3] Registrar `AdminAuthModule` en `AppModule` con `@nestjs/jwt` configurado desde env
+- [X] T121 [P] [US3] Crear `backend/src/modules/admin/auth/admin-auth.service.ts` con `login(username, password)` bcrypt-verify + JWT firm; test unitario previo
+- [X] T122 [US3] Crear `backend/src/modules/admin/auth/admin-auth.controller.ts` con `POST /admin/auth/login`, `POST /admin/auth/logout`, `GET /admin/me`; setear cookie HttpOnly Secure SameSite=Strict TTL 8h
+- [X] T123 [US3] Registrar `AdminAuthModule` en `AppModule` con `@nestjs/jwt` configurado desde env
 
 **Backend — Slots admin**
 
-- [ ] T124 [P] [US3] Añadir en `backend/src/modules/slots/slots.repository.ts` los métodos admin `create`, `update`, `disable(withCancellation)` (transacción SERIALIZABLE que cambia estado de citas activas a `cancelled_by_bank`); test unitario previo
-- [ ] T125 [US3] Crear `backend/src/modules/admin/slots/admin-slots.controller.ts` con `GET /admin/slots`, `POST /admin/slots`, `PATCH /admin/slots/:id`, `POST /admin/slots/:id/disable`, todos protegidos por `AdminGuard`
+- [X] T124 [P] [US3] Añadir en `backend/src/modules/slots/slots.repository.ts` los métodos admin `create`, `update`, `disable(withCancellation)` (transacción SERIALIZABLE que cambia estado de citas activas a `cancelled_by_bank`); test unitario previo
+- [X] T125 [US3] Crear `backend/src/modules/admin/slots/admin-slots.controller.ts` con `GET /admin/slots`, `POST /admin/slots`, `PATCH /admin/slots/:id`, `POST /admin/slots/:id/disable`, todos protegidos por `AdminGuard`
 
 **Backend — Appointments admin + PDF**
 
-- [ ] T126 [P] [US3] Añadir en `backend/src/modules/appointments/appointments.repository.ts` método `findByDateRange({ from, to, status? })`; test unitario previo
-- [ ] T127 [P] [US3] Crear `backend/src/modules/admin/reports/pdf-report.service.ts` que usa `pdfkit` para generar un PDF con cabecera "Hospital Central de San Cristóbal", rango de fechas, tabla ordenada por fecha/hora con columnas hora / nombre / apellido / cédula / código / estado; test unitario previo con inspección de bytes generados
-- [ ] T128 [US3] Crear `backend/src/modules/admin/reports/admin-reports.controller.ts` con `GET /admin/appointments` y `GET /admin/appointments/export.pdf` (protegidos por `AdminGuard`); registrar acción `pdf_exported` en `admin_audit_log`
+- [X] T126 [P] [US3] Añadir en `backend/src/modules/appointments/appointments.repository.ts` método `findByDateRange({ from, to, status? })`; test unitario previo
+- [X] T127 [P] [US3] Crear `backend/src/modules/admin/reports/pdf-report.service.ts` que usa `pdfkit` para generar un PDF con cabecera "Hospital Central de San Cristóbal", rango de fechas, tabla ordenada por fecha/hora con columnas hora / nombre / apellido / cédula / código / estado; test unitario previo con inspección de bytes generados
+- [X] T128 [US3] Crear `backend/src/modules/admin/reports/admin-reports.controller.ts` con `GET /admin/appointments` y `GET /admin/appointments/export.pdf` (protegidos por `AdminGuard`); registrar acción `pdf_exported` en `admin_audit_log`
 
 **Backend — System state admin (kill switch)**
 
-- [ ] T129 [US3] Ampliar `backend/src/modules/system-state/system-state.service.ts` con `toggle(adminId, enabled, reason)` que actualiza singleton y registra `kill_switch_on`/`kill_switch_off` en audit log
-- [ ] T130 [US3] Crear `backend/src/modules/admin/system-state/admin-system-state.controller.ts` con `GET /admin/system-state` y `POST /admin/system-state/kill-switch`
+- [X] T129 [US3] Ampliar `backend/src/modules/system-state/system-state.service.ts` con `toggle(adminId, enabled, reason)` que actualiza singleton y registra `kill_switch_on`/`kill_switch_off` en audit log
+- [X] T130 [US3] Crear `backend/src/modules/admin/system-state/admin-system-state.controller.ts` con `GET /admin/system-state` y `POST /admin/system-state/kill-switch`
 
 **Backend — Audit log wire**
 
-- [ ] T131 [P] [US3] Crear `backend/src/modules/admin/audit/admin-audit-log.service.ts` inyectable; test unitario previo
-- [ ] T132 [US3] Inyectar `AdminAuditLogService` en los servicios de auth, slots admin, appointments admin y system-state admin, registrando la acción correspondiente en cada mutación
+- [X] T131 [P] [US3] Crear `backend/src/modules/admin/audit/admin-audit-log.service.ts` inyectable; test unitario previo
+- [X] T132 [US3] Inyectar `AdminAuditLogService` en los servicios de auth, slots admin, appointments admin y system-state admin, registrando la acción correspondiente en cada mutación
 
 **Frontend — Panel admin**
 
@@ -316,12 +316,12 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Purpose**: Retención, hardening, performance, observabilidad, documentación.
 
-- [ ] T140 [P] Job de retención en `backend/src/modules/appointments/retention.job.ts` que corre cron diario (`@nestjs/schedule`) y anonimiza citas finales con `date` >90 días atrás (research §12); test integration previo en `backend/test/integration/retention.spec.ts` con override `TEST_REDACTION_DAYS`
-- [ ] T141 [P] Job de estados en `backend/src/modules/appointments/expire-active.job.ts` que marca como `no_show` las citas `active` cuyo slot ya pasó (por defecto 2h después de `end_time`); test integration previo
-- [ ] T142 [P] Log masking en `backend/src/common/interceptors/logging.interceptor.ts` (extender T027) — sanitizar `firstName`, `lastName`, `idNumber` en request bodies antes de emitir el log; test unitario previo
-- [ ] T143 [P] Añadir headers de seguridad en `backend/src/main.ts` con `helmet` (CSP restrictivo, HSTS solo prod); test integration verificando presencia de headers
-- [ ] T144 [P] Endpoint `/health/live` y `/health/ready` diferenciados en `backend/src/modules/health/health.controller.ts` (ready incluye ping Postgres, live solo proceso vivo)
-- [ ] T145 [P] Snapshot del OpenAPI generado contra `contracts/public-api.openapi.yaml` y `contracts/admin-api.openapi.yaml` en CI (job `openapi-check` en `.github/workflows/ci.yml`) — falla el build si divergen
+- [X] T140 [P] Job de retención en `backend/src/modules/appointments/retention.job.ts` que corre cron diario (`@nestjs/schedule`) y anonimiza citas finales con `date` >90 días atrás (research §12); test integration previo en `backend/test/integration/retention.spec.ts` con override `TEST_REDACTION_DAYS`
+- [X] T141 [P] Job de estados en `backend/src/modules/appointments/expire-active.job.ts` que marca como `no_show` las citas `active` cuyo slot ya pasó (por defecto 2h después de `end_time`); test integration previo
+- [X] T142 [P] Log masking en `backend/src/common/interceptors/logging.interceptor.ts` (extender T027) — sanitizar `firstName`, `lastName`, `idNumber` en request bodies antes de emitir el log; test unitario previo
+- [X] T143 [P] Añadir headers de seguridad en `backend/src/main.ts` con `helmet` (CSP restrictivo, HSTS solo prod); test integration verificando presencia de headers
+- [X] T144 [P] Endpoint `/health/live` y `/health/ready` diferenciados en `backend/src/modules/health/health.controller.ts` (ready incluye ping Postgres, live solo proceso vivo)
+- [X] T145 [P] Snapshot del OpenAPI generado contra `contracts/public-api.openapi.yaml` y `contracts/admin-api.openapi.yaml` en CI (job `openapi-check` en `.github/workflows/ci.yml`) — falla el build si divergen
 - [ ] T146 [P] Lighthouse mobile budget en `.github/workflows/ci.yml` con umbrales: Performance ≥90, Accessibility ≥95, Best Practices ≥90; corre sobre landing y `/agendar`
 - [X] T147 [P] Actualizar `README.md` raíz con: comandos `pnpm dev`/`pnpm test`/`pnpm build`, referencia a `specs/001-blood-donation-scheduling/quickstart.md`, y política de branches (Git Flow) según Constitución Principio VI
 - [ ] T148 [P] Añadir `CONTRIBUTING.md` breve indicando: TDD obligatorio, comentarios en español, checklist AAA + mobile antes de PR

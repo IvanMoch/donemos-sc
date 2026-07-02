@@ -11,7 +11,19 @@ export class HealthController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
-  async check(): Promise<{ status: 'ok'; db: 'ok' | 'down' }> {
+  check(): Promise<{ status: 'ok'; db: 'ok' | 'down' }> {
+    return this.ready();
+  }
+
+  /** Liveness (T144): el proceso responde; no depende de la BD. */
+  @Get('live')
+  live(): { status: 'ok' } {
+    return { status: 'ok' };
+  }
+
+  /** Readiness (T144): incluye ping a Postgres. */
+  @Get('ready')
+  async ready(): Promise<{ status: 'ok'; db: 'ok' | 'down' }> {
     let db: 'ok' | 'down' = 'ok';
     try {
       await this.prisma.$queryRawUnsafe('SELECT 1');

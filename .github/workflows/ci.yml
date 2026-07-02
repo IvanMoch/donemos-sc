@@ -215,6 +215,30 @@ jobs:
           uploadArtifacts: true
           artifactName: lighthouse-report
 
+  openapi-check:
+    name: OpenAPI drift check
+    runs-on: ubuntu-latest
+    needs: guardrails
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # T145: falla si el contrato público generado desde los esquemas Zod
+      # diverge del commiteado (backend/contracts/public-api.generated.yaml).
+      - name: Verificar contrato OpenAPI
+        run: pnpm --filter @donemos/shared build && pnpm --filter backend openapi:check
+
   build:
     name: Build
     runs-on: ubuntu-latest

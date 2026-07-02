@@ -58,6 +58,65 @@ paths:
           description: Rate limit excedido
         "503":
           description: Kill switch activo
+  /appointments/lookup:
+    post:
+      summary: Consultar cita por cédula + código (US2, FR-013, FR-016)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LookupRequest"
+      responses:
+        "200":
+          description: Detalle de la cita
+        "404":
+          description: No existe (mensaje genérico)
+        "429":
+          description: Rate limit excedido
+  /appointments/{code}/cancel:
+    post:
+      summary: Cancelar cita (US2, FR-014). Funciona con kill switch activo.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelRequest"
+      responses:
+        "200":
+          description: Cita cancelada
+        "404":
+          description: No existe o cédula no coincide
+  /appointments/{code}/reschedule:
+    patch:
+      summary: Reagendar cita (US2, FR-015). 409 kill_switch_active si el switch está
+        activo.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RescheduleRequest"
+      responses:
+        "200":
+          description: Reagendada
+        "404":
+          description: No existe o cédula no coincide
+        "409":
+          description: Nueva franja sin cupo o kill switch activo
 components:
   schemas:
     CreateAppointmentRequest:
@@ -108,6 +167,29 @@ components:
       required:
         - code
         - idNumber
+    CancelRequest:
+      type:
+        - object
+      properties:
+        idNumber:
+          type:
+            - string
+      required:
+        - idNumber
+    RescheduleRequest:
+      type:
+        - object
+      properties:
+        idNumber:
+          type:
+            - string
+        newSlotId:
+          type:
+            - string
+          format: uuid
+      required:
+        - idNumber
+        - newSlotId
     PublicSlot:
       type:
         - object

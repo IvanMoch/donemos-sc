@@ -14,19 +14,10 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { logger } from '../logger/logger';
+import { maskSensitive } from '../utils/mask-sensitive';
 
-/** Campos PII que nunca deben aparecer en logs (data-model.md §Convenciones). */
-const CAMPOS_PII = ['firstName', 'lastName', 'idNumber'];
-
-/** Copia superficial del cuerpo con los campos PII reemplazados por '***'. */
-export function maskSensitive(body: unknown): unknown {
-  if (typeof body !== 'object' || body === null) return body;
-  const copia: Record<string, unknown> = { ...(body as Record<string, unknown>) };
-  for (const campo of CAMPOS_PII) {
-    if (campo in copia) copia[campo] = '***';
-  }
-  return copia;
-}
+// Re-exportado para compatibilidad con quienes lo importaban desde el filtro.
+export { maskSensitive };
 
 interface CuerpoError {
   error: string;

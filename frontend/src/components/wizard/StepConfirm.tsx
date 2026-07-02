@@ -1,0 +1,73 @@
+/**
+ * StepConfirm — paso 4 del wizard.
+ *
+ * Renderiza un resumen de los datos ingresados para que el donante los
+ * revise antes de confirmar. El botón "Confirmar cita" vive en WizardShell
+ * (el mismo botón cambia de "Siguiente" a "Confirmar" en el último paso).
+ *
+ * Muestra `error` cuando existe (por ejemplo cupos agotados o backend caído)
+ * con role="alert" para que los lectores de pantalla lo anuncien.
+ */
+import type { WizardData } from './wizard-state';
+
+interface StepConfirmProps {
+  data: WizardData;
+  isSubmitting: boolean;
+  error: string | null;
+}
+
+const DEMO_SLOT_LABELS: Record<string, string> = {
+  'demo-1': 'Lunes 06 de julio · 07:00 – 07:35',
+  'demo-2': 'Lunes 06 de julio · 07:40 – 08:15',
+  'demo-3': 'Martes 07 de julio · 09:00 – 09:35',
+};
+
+export function StepConfirm({ data, isSubmitting, error }: StepConfirmProps): JSX.Element {
+  const slotLabel = data.slotId ? (DEMO_SLOT_LABELS[data.slotId] ?? data.slotId) : '—';
+  return (
+    <div className="mt-4 flex flex-col gap-4">
+      <p className="text-base text-ink">
+        Revisa que tus datos estén correctos antes de confirmar la cita:
+      </p>
+      <dl className="rounded-md border border-neutral-200 bg-paper-warm p-4 text-base text-ink">
+        <div className="flex flex-col gap-1 py-2">
+          <dt className="text-sm font-medium text-ink-700">Horario</dt>
+          <dd className="text-base">{slotLabel}</dd>
+        </div>
+        <div className="flex flex-col gap-1 border-t border-neutral-200 py-2">
+          <dt className="text-sm font-medium text-ink-700">Nombre completo</dt>
+          <dd className="text-base">
+            {data.firstName} {data.lastName}
+          </dd>
+        </div>
+        <div className="flex flex-col gap-1 border-t border-neutral-200 py-2">
+          <dt className="text-sm font-medium text-ink-700">Cédula</dt>
+          <dd className="text-base">{data.idNumber}</dd>
+        </div>
+        <div className="flex flex-col gap-1 border-t border-neutral-200 py-2">
+          <dt className="text-sm font-medium text-ink-700">Auto-declaración</dt>
+          <dd className="text-base">
+            {data.eligibilityDeclared
+              ? 'Confirmada — cumplo requisitos y no aplico a criterios de exclusión.'
+              : 'Pendiente — no puedes continuar sin marcarla en el paso inicial.'}
+          </dd>
+        </div>
+      </dl>
+
+      {isSubmitting && (
+        <p className="text-sm text-ink-700" role="status" aria-live="polite">
+          Enviando tu cita al servidor…
+        </p>
+      )}
+
+      {error && (
+        <p
+          role="alert"
+          className="rounded-md border border-primary bg-primary-50 p-3 text-sm text-primary-900"
+        >
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}

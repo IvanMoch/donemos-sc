@@ -1,0 +1,36 @@
+---
+// Página /agendar — hospeda el wizard de agendamiento (T080).
+//
+// Esta página NO está prerenderizada: se sirve SSR para poder consultar el
+// estado del kill switch en el servidor antes de renderizar (research §5).
+// Si `appointmentsDisabled=true`, redirigimos a /kill-switch-activo (SC-005).
+//
+// TODO(US1 backend): implementar la consulta a /api/v1/system/status.
+// Mientras Fase 2 backend no exista, servimos siempre el wizard (no hay
+// endpoint que devuelva el kill switch todavía). El apiClient (T037) ya
+// tiene el helper listo — solo faltará el fetch server-side aquí.
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { WizardShell } from '../../components/wizard/WizardShell';
+import '../../styles/wizard.css';
+import '../../styles/print.css';
+
+// TODO(US1 backend): server-side fetch a /api/v1/system/status.
+// Ejemplo del código final:
+//
+//   import { apiClient } from '../../lib/api-client';
+//   const status = await apiClient<{ appointmentsDisabled: boolean }>('/system/status');
+//   if (status?.appointmentsDisabled) {
+//     return Astro.redirect('/kill-switch-activo');
+//   }
+---
+
+<BaseLayout
+  title="Agendar cita — DonemosSC"
+  description="Elegí tu horario y agendá tu cita para donar sangre en el Banco de Sangre del Hospital Central de San Cristóbal."
+>
+  {/* client:load porque el wizard es interactivo desde el primer render.
+      client:idle daría FID mejor pero rompería la percepción de
+      inmediatez en el paso intro. */}
+  <WizardShell client:load />
+</BaseLayout>

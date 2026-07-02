@@ -1,0 +1,53 @@
+---
+// Página mostrada cuando el kill switch global está activo (T074).
+//
+// Se llega aquí desde /agendar cuando el server-side check en Astro
+// (T080) detecta appointmentsDisabled=true. También sirve como página
+// pública informativa si el usuario intenta ir manualmente.
+//
+// NO redirigimos desde /consultar cuando el kill switch está activo — el
+// donante DEBE poder consultar y cancelar su cita aunque el agendamiento
+// esté cerrado (spec § clarifications, decisión Q5).
+//
+// Prerender: página 100% estática — el estado real del kill switch se
+// consulta desde /agendar (SSR) o desde el wizard. Esta página solo es
+// el "resultado" del check.
+export const prerender = true;
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Agendamiento temporalmente cerrado — DonemosSC"
+  description="El agendamiento público del Banco de Sangre está pausado temporalmente. Puedes consultar tu cita si ya tienes una."
+>
+  <div class="mx-auto flex max-w-xl flex-col gap-6 text-center">
+    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Aviso importante</p>
+    <h1 class="text-3xl font-bold leading-tight text-ink sm:text-4xl">
+      El agendamiento está pausado temporalmente.
+    </h1>
+    <p class="text-lg text-ink">
+      El banco de sangre del Hospital Central de San Cristóbal ha cerrado el flujo público de
+      nuevas citas de forma temporal. Estamos trabajando para reabrirlo pronto.
+    </p>
+
+    <div class="mt-4 rounded-md border border-primary bg-primary-50 p-4 text-left">
+      <h2 class="text-base font-semibold text-ink">¿Ya tienes una cita?</h2>
+      <p class="mt-1 text-base text-ink">
+        Puedes consultar tu cita con tu cédula y el código que recibiste. Si necesitas cancelarla,
+        también puedes hacerlo — el cupo queda liberado.
+      </p>
+      <a
+        href="/consultar"
+        class="mt-3 inline-flex min-h-touch items-center justify-center rounded-md bg-primary px-6 py-2 text-base font-medium text-paper transition-colors duration-[220ms] hover:bg-primary-800"
+      >
+        Consultar mi cita
+      </a>
+    </div>
+
+    <p class="mt-4 text-sm text-ink-700">
+      Si tenías planificado agendar hoy, vuelve más tarde. Este aviso desaparece automáticamente
+      cuando el banco reabre el agendamiento.
+    </p>
+  </div>
+</BaseLayout>

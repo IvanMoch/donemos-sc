@@ -1,13 +1,18 @@
-# CI mínimo — se irá extendiendo con la tarea T014 del plan.
+# CI de DonemosSC (T014).
 #
-# Objetivo actual (pre-scaffolding): garantizar que ningún PR llegue a develop/main
-# sin verificar los documentos que reglamentan el proyecto (Constitución + spec + plan + tasks + CONTRIBUTING).
-# Cuando T014 cierre, este workflow se amplía con jobs de:
-#   - lint (ESLint + Prettier)
-#   - test-backend (Jest + testcontainers Postgres)
-#   - test-frontend (Vitest + Playwright + @axe-core/playwright con umbral AAA)
-#   - lighthouse-mobile (Performance ≥ 90, Accessibility ≥ 95)
-#   - openapi-check (contrato generado ≡ contrato versionado)
+# Jobs:
+#   - guardrails:       documentos que reglamentan el proyecto presentes, sin secretos.
+#   - lint:             ESLint + Prettier + astro check en los tres workspaces.
+#   - test-backend:     Jest (unit + contract + integration). Las suites de
+#                       integración levantan Postgres 16 efímero vía testcontainers
+#                       (research §11) — por eso NO hay service container aquí.
+#   - test-frontend:    Vitest (islas React) + Playwright/axe-core (E2E AAA).
+#                       Los E2E corren solo cuando existen specs (llegan en US1).
+#   - lighthouse-mobile: Performance ≥ 90 sobre el build estático (perfil móvil,
+#                       el default de Lighthouse). T146 endurece budgets (a11y ≥ 95).
+#   - build:            pnpm -r build (backend nest build + frontend astro build).
+#
+# Pendiente por plan: job openapi-check (T145, Fase 6).
 
 name: CI
 
@@ -63,180 +68,171 @@ jobs:
           fi
           echo "✅ .claude/ correctamente ignorado."
 
-  install:
-    name: Install workspaces (si existen)
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     needs: guardrails
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verificar si el scaffolding ya existe
-        id: check
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            echo "scaffolded=true" >> $GITHUB_OUTPUT
-          else
-            echo "scaffolded=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Setup pnpm
-        if: steps.check.outputs.scaffolded == 'true'
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
 
       - name: Setup Node.js
-        if: steps.check.outputs.scaffolded == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '20.18.1'
+          node-version-file: .nvmrc
           cache: 'pnpm'
 
       - name: Install
-        if: steps.check.outputs.scaffolded == 'true'
-        run: pnpm install --frozen-lockfile
-
-      - name: Skip (scaffolding aún no aplicado)
-        if: steps.check.outputs.scaffolded == 'false'
-        run: echo "⏭️  pnpm-lock.yaml aún no existe (T002 pendiente). Skip install."
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    needs: install
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Verificar si el scaffolding ya existe
-        id: check
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            echo "scaffolded=true" >> $GITHUB_OUTPUT
-          else
-            echo "scaffolded=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Setup pnpm + Node
-        if: steps.check.outputs.scaffolded == 'true'
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
-
-      - name: Setup Node.js
-        if: steps.check.outputs.scaffolded == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.18.1'
-          cache: 'pnpm'
-
-      - name: Install
-        if: steps.check.outputs.scaffolded == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        if: steps.check.outputs.scaffolded == 'true'
         run: pnpm lint
 
-      - name: Skip
-        if: steps.check.outputs.scaffolded == 'false'
-        run: echo "⏭️  Lint se activa cuando T005 esté cerrado."
-
-  test:
-    name: Test (backend + frontend)
+  test-backend:
+    name: Test backend (unit + contract + integration)
     runs-on: ubuntu-latest
-    needs: install
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: donemos
-          POSTGRES_PASSWORD: donemos
-          POSTGRES_DB: donemos_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    needs: guardrails
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verificar si el scaffolding ya existe
-        id: check
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            echo "scaffolded=true" >> $GITHUB_OUTPUT
-          else
-            echo "scaffolded=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Setup pnpm
-        if: steps.check.outputs.scaffolded == 'true'
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
 
       - name: Setup Node.js
-        if: steps.check.outputs.scaffolded == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '20.18.1'
+          node-version-file: .nvmrc
           cache: 'pnpm'
 
       - name: Install
-        if: steps.check.outputs.scaffolded == 'true'
         run: pnpm install --frozen-lockfile
 
-      - name: Test
-        if: steps.check.outputs.scaffolded == 'true'
+      # unit y contract no tocan red; integration levanta Postgres efímero
+      # con testcontainers usando el Docker del runner.
+      - name: Test unit + contract
         env:
-          DATABASE_URL: 'postgres://donemos:donemos@localhost:5432/donemos_test'
           JWT_SECRET: 'ci-secret-not-for-prod'
           REDACTION_PEPPER: 'ci-pepper-not-for-prod'
-        run: pnpm test
+        run: |
+          pnpm --filter backend test:unit
+          pnpm --filter backend test:contract
 
-      - name: Skip
-        if: steps.check.outputs.scaffolded == 'false'
-        run: echo "⏭️  Tests se activan cuando T012/T013 estén cerrados."
+      - name: Test integration (testcontainers)
+        env:
+          JWT_SECRET: 'ci-secret-not-for-prod'
+          REDACTION_PEPPER: 'ci-pepper-not-for-prod'
+        run: pnpm --filter backend test:integration
+
+  test-frontend:
+    name: Test frontend (Vitest + Playwright/axe)
+    runs-on: ubuntu-latest
+    needs: guardrails
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Vitest (componentes React)
+        run: pnpm --filter frontend test
+
+      # Los E2E (Playwright + @axe-core/playwright) llegan con US1 (T054+).
+      # Detectamos specs para no arrancar Chromium ni el preview en vano.
+      - name: Detectar specs E2E
+        id: e2e
+        run: |
+          if find frontend/test/e2e -type f \( -name '*.spec.ts' -o -name '*.e2e.ts' \) 2>/dev/null | grep -q .; then
+            echo "existen=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "existen=false" >> "$GITHUB_OUTPUT"
+            echo "⏭️  Sin specs E2E todavía (llegan en US1)."
+          fi
+
+      - name: Instalar Chromium de Playwright
+        if: steps.e2e.outputs.existen == 'true'
+        run: pnpm --filter frontend test:e2e:install
+
+      - name: Build + preview para E2E
+        if: steps.e2e.outputs.existen == 'true'
+        run: |
+          pnpm --filter frontend build
+          (pnpm --filter frontend preview &)
+          npx --yes wait-on http://localhost:4321 --timeout 60000
+
+      - name: Playwright E2E (con axe-core AAA)
+        if: steps.e2e.outputs.existen == 'true'
+        env:
+          PLAYWRIGHT_BASE_URL: 'http://localhost:4321'
+        run: pnpm --filter frontend exec playwright test
+
+      - name: Subir reporte Playwright
+        if: steps.e2e.outputs.existen == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
+  lighthouse-mobile:
+    name: Lighthouse mobile (Performance ≥ 90)
+    runs-on: ubuntu-latest
+    needs: guardrails
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --filter frontend build
+
+      # Lighthouse audita el dist estático con emulación móvil (default).
+      # Los budgets completos (a11y ≥ 95, best practices ≥ 90) llegan en T146.
+      - name: Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: .github/lighthouse/lighthouserc.json
+          uploadArtifacts: true
+          artifactName: lighthouse-report
 
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: install
+    needs: guardrails
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verificar si el scaffolding ya existe
-        id: check
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            echo "scaffolded=true" >> $GITHUB_OUTPUT
-          else
-            echo "scaffolded=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Setup pnpm + Node
-        if: steps.check.outputs.scaffolded == 'true'
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
 
       - name: Setup Node.js
-        if: steps.check.outputs.scaffolded == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '20.18.1'
+          node-version-file: .nvmrc
           cache: 'pnpm'
 
       - name: Install
-        if: steps.check.outputs.scaffolded == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        if: steps.check.outputs.scaffolded == 'true'
         run: pnpm build
-
-      - name: Skip
-        if: steps.check.outputs.scaffolded == 'false'
-        run: echo "⏭️  Build se activa cuando exista scaffolding."

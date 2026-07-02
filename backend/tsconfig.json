@@ -1,0 +1,21 @@
+{
+  // TypeScript del backend NestJS. Hereda el modo strict del monorepo
+  // (tsconfig.base.json) y ajusta lo que NestJS exige: CommonJS + decoradores
+  // con metadata (inyección de dependencias de Nest depende de ambos).
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "sourceMap": true,
+    "incremental": true,
+    "outDir": "./dist",
+    // isolatedModules del base es para bundlers; tsc compila el backend completo.
+    "isolatedModules": false
+  },
+  "include": ["src/**/*", "test/**/*", "jest.config.ts", "prisma/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

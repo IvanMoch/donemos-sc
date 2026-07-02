@@ -36,15 +36,15 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 - [X] T003 [P] Escribir `.gitignore` en la raíz cubriendo `node_modules/`, `dist/`, `.env`, `.env.*`, `coverage/`, `playwright-report/`, `.claude/`, `*.pdf` (adjuntos generados), `.turbo/`
 - [X] T004 [P] Configurar TypeScript base compartido en `tsconfig.base.json` (strict, `noUncheckedIndexedAccess`, `paths` para `@donemos/shared/*`)
 - [X] T005 [P] Configurar ESLint + Prettier compartidos en `.eslintrc.cjs` y `.prettierrc` raíz; regla obligatoria: comentario de cabecera de responsabilidad en archivos públicos (Principio VII)
-- [ ] T006 [P] Scaffolding NestJS en `backend/` con `nest new backend --skip-install --package-manager pnpm`; `backend/package.json` con NestJS 10, TypeScript 5, `pino`, `helmet`, `@nestjs/throttler`, `@nestjs/jwt`, `@nestjs/config`, `cookie-parser`, `bcrypt`, `nanoid`, `pdfkit`, `prisma`, `@prisma/client`, `zod`, `@anatine/zod-openapi`, Jest, Supertest, `@testcontainers/postgresql`
+- [X] T006 [P] Scaffolding NestJS en `backend/` con `nest new backend --skip-install --package-manager pnpm`; `backend/package.json` con NestJS 10, TypeScript 5, `pino`, `helmet`, `@nestjs/throttler`, `@nestjs/jwt`, `@nestjs/config`, `cookie-parser`, `bcrypt`, `nanoid`, `pdfkit`, `prisma`, `@prisma/client`, `zod`, `@anatine/zod-openapi`, Jest, Supertest, `@testcontainers/postgresql`
 - [X] T007 [P] Scaffolding Astro en `frontend/` con `pnpm create astro@latest frontend`; instalar `@astrojs/react`, `@astrojs/tailwind`, `tailwindcss`, `react`, `react-dom`, `react-hook-form`, `@hookform/resolvers`, `zod`, Vitest, `@testing-library/react`, Playwright, `@axe-core/playwright`
-- [ ] T008 [P] Inicializar `packages/shared/` con `package.json` (`@donemos/shared`), `tsconfig.json` (referencia a `tsconfig.base.json`), `src/index.ts` vacío
-- [ ] T009 Configurar `docker-compose.yml` en la raíz con servicio `postgres:16` (usuario `donemos`, DB `donemos`, puerto 5432) y volumen persistente `donemos-pg-data`
-- [ ] T010 Inicializar Prisma en `backend/`: `backend/prisma/schema.prisma` con `provider = "postgresql"`, `datasource db` desde `env("DATABASE_URL")`, generator client
+- [X] T008 [P] Inicializar `packages/shared/` con `package.json` (`@donemos/shared`), `tsconfig.json` (referencia a `tsconfig.base.json`), `src/index.ts` vacío
+- [X] T009 Configurar `docker-compose.yml` en la raíz con servicio `postgres:16` (usuario `donemos`, DB `donemos`, puerto 5432) y volumen persistente `donemos-pg-data`
+- [X] T010 Inicializar Prisma en `backend/`: `backend/prisma/schema.prisma` con `provider = "postgresql"`, `datasource db` desde `env("DATABASE_URL")`, generator client
 - [X] T011 [P] Crear `backend/.env.example` con `DATABASE_URL`, `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `REDACTION_PEPPER`, `PORT`; agregar `frontend/.env.example` con `PUBLIC_API_BASE_URL`
-- [ ] T012 [P] Configurar Jest en `backend/jest.config.ts` (proyectos: `unit`, `contract`, `integration`) con setup para `@testcontainers/postgresql` en `integration`
+- [X] T012 [P] Configurar Jest en `backend/jest.config.ts` (proyectos: `unit`, `contract`, `integration`) con setup para `@testcontainers/postgresql` en `integration`
 - [X] T013 [P] Configurar Vitest en `frontend/vitest.config.ts` y Playwright en `frontend/playwright.config.ts` (device: `Pixel 5` como default móvil; base URL `http://localhost:4321`)
-- [ ] T014 Crear workflow CI `.github/workflows/ci.yml` con jobs: `lint`, `test-backend` (unit + contract + integration con testcontainers), `test-frontend` (Vitest + Playwright + axe-core), `lighthouse-mobile` (target ≥90), `build`
+- [X] T014 Crear workflow CI `.github/workflows/ci.yml` con jobs: `lint`, `test-backend` (unit + contract + integration con testcontainers), `test-frontend` (Vitest + Playwright + axe-core), `lighthouse-mobile` (target ≥90), `build`
 - [X] T015 [P] Añadir `README.md` mínimo en la raíz apuntando a `specs/001-blood-donation-scheduling/quickstart.md` para instrucciones de desarrollo
 
 **Checkpoint**: Repo compila (`pnpm install && pnpm build`), Postgres arranca vía Docker, CI corre en verde con suites vacías.

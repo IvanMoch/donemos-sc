@@ -1,0 +1,14 @@
+{
+  "_comentario": "Configuración Lighthouse CI (T014). Audita el build estático del frontend con emulación móvil (default de Lighthouse). El budget actual es solo Performance >= 0.9 (plan.md § Performance Goals); T146 (Fase 6) añade Accessibility >= 0.95 y Best Practices >= 0.9 sobre landing y /agendar.",
+  "ci": {
+    "collect": {
+      "staticDistDir": "./frontend/dist",
+      "numberOfRuns": 1
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.9 }]
+      }
+    }
+  }
+}

@@ -1,14 +1,29 @@
 # DonemosSC — servicios de desarrollo local.
-# Este esqueleto se materializa completamente en T009 (Postgres 16 + volumen persistente).
-# Por ahora define únicamente la red compartida y el placeholder del servicio Postgres
-# para que `docker compose config` valide sin errores.
+# Única dependencia de infraestructura del MVP: PostgreSQL 16 (Principio I —
+# sin Redis ni servicios externos; el kill switch y las sesiones viven en la BD).
+# Uso: `docker compose up -d postgres`. La app se conecta con la DATABASE_URL
+# de backend/.env.example. Los tests de integración NO usan este servicio:
+# levantan su propio Postgres efímero vía testcontainers (research §11).
 
 services:
   postgres:
-    # T009 completará la configuración con imagen postgres:16, usuario donemos,
-    # base donemos, puerto 5432 y volumen persistente donemos-pg-data.
     image: postgres:16
-    profiles: ["disabled-until-T009"]
+    container_name: donemos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: donemos
+      POSTGRES_PASSWORD: donemos
+      POSTGRES_DB: donemos
+    ports:
+      - '5432:5432'
+    volumes:
+      - donemos-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U donemos -d donemos']
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
+  # Volumen persistente: los datos sobreviven a `docker compose down` (sin -v).
   donemos-pg-data:

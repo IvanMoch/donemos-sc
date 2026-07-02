@@ -1,13 +1,21 @@
 {
-  "_comentario": "Configuración Lighthouse CI (T014). Audita el build estático del frontend con emulación móvil (default de Lighthouse). El budget actual es solo Performance >= 0.9 (plan.md § Performance Goals); T146 (Fase 6) añade Accessibility >= 0.95 y Best Practices >= 0.9 sobre landing y /agendar.",
+  "_comentario": "Lighthouse mobile budget (T146). Audita landing y /agendar con emulación móvil (default de Lighthouse). Umbrales: Performance ≥ 0.9, Accessibility ≥ 0.95, Best Practices ≥ 0.9. El CI arranca `pnpm preview` porque /agendar es SSR y no queda como HTML estático en dist/.",
   "ci": {
     "collect": {
-      "staticDistDir": "./frontend/dist",
-      "numberOfRuns": 1
+      "url": [
+        "http://localhost:4321/",
+        "http://localhost:4321/agendar"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "chromeFlags": "--no-sandbox --headless"
+      }
     },
     "assert": {
       "assertions": {
-        "categories:performance": ["error", { "minScore": 0.9 }]
+        "categories:performance": ["error", { "minScore": 0.9 }],
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "categories:best-practices": ["error", { "minScore": 0.9 }]
       }
     }
   }

@@ -185,7 +185,7 @@ jobs:
           retention-days: 7
 
   lighthouse-mobile:
-    name: Lighthouse mobile (Performance ≥ 90)
+    name: Lighthouse mobile (Performance ≥ 90, A11y ≥ 95, Best Practices ≥ 90)
     runs-on: ubuntu-latest
     needs: guardrails
     steps:
@@ -206,14 +206,60 @@ jobs:
       - name: Build frontend
         run: pnpm --filter frontend build
 
-      # Lighthouse audita el dist estático con emulación móvil (default).
-      # Los budgets completos (a11y ≥ 95, best practices ≥ 90) llegan en T146.
+      # Astro con adapter Node.js necesita servidor real para /agendar (SSR).
+      # Boot en background + wait-on antes de auditar.
+      - name: Preview frontend (server SSR)
+        env:
+          PUBLIC_API_BASE_URL: 'http://localhost:3000/api/v1'
+        run: |
+          (pnpm --filter frontend preview &)
+          npx --yes wait-on http://localhost:4321 --timeout 60000
+
+      # T146: Lighthouse mobile audita landing (/) y /agendar con budgets
+      # Performance ≥ 0.9, Accessibility ≥ 0.95, Best Practices ≥ 0.9.
       - name: Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
         with:
           configPath: .github/lighthouse/lighthouserc.json
           uploadArtifacts: true
           artifactName: lighthouse-report
+
+  pa11y-contrast:
+    name: pa11y contrast check (T150)
+    runs-on: ubuntu-latest
+    needs: guardrails
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --filter frontend build
+
+      - name: Preview frontend
+        env:
+          PUBLIC_API_BASE_URL: 'http://localhost:3000/api/v1'
+        run: |
+          (pnpm --filter frontend preview &)
+          npx --yes wait-on http://localhost:4321 --timeout 60000
+
+      # pa11y aplica los criterios WCAG2AAA; verifica contrastes 7:1 (SC 1.4.6).
+      # Reforzamos las mismas páginas que Lighthouse + admin/login (a11y admin).
+      - name: pa11y sobre landing, /agendar y /admin/login
+        run: |
+          npx --yes pa11y --standard WCAG2AAA http://localhost:4321/
+          npx --yes pa11y --standard WCAG2AAA http://localhost:4321/agendar
+          npx --yes pa11y --standard WCAG2AAA http://localhost:4321/admin/login
 
   openapi-check:
     name: OpenAPI drift check

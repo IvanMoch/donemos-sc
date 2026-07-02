@@ -14,7 +14,11 @@
     "test:integration": "jest --selectProjects integration --passWithNoTests --runInBand",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "prisma db seed",
     "prisma:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "ts-node -P tsconfig.json prisma/seed.ts"
   },
   "dependencies": {
     "@anatine/zod-openapi": "^2.2.7",

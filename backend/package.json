@@ -4,6 +4,7 @@
   "private": true,
   "description": "API REST de DonemosSC — NestJS 10 + Prisma + PostgreSQL. Única fuente de datos del frontend (Principio I).",
   "scripts": {
+    "postinstall": "prisma generate",
     "build": "nest build",
     "dev": "nest start --watch",
     "start": "node dist/main.js",

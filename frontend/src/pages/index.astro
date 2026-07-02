@@ -1,20 +1,178 @@
 ---
-// Landing pública de DonemosSC — placeholder de scaffolding.
-// El contenido real (hero, requisitos, criterios de exclusión, CTA al wizard)
-// se materializa en las tareas de US1 (Fase 3 del plan).
-// Prerender: página 100% estática, sin dependencias de datos del kill switch.
-// Mantiene Lighthouse alto en móvil sin pagar SSR en cada request.
+// Landing pública de DonemosSC (T073).
+//
+// Muestra: hero + CTA a /agendar, los 6 requisitos, las 5 consideraciones y
+// el link al mapa del hospital. El contenido está tomado literal de la
+// spec.md § "Contenido Informativo" — es la copia autoritativa aprobada por
+// el banco.
+//
+// TODO(US1 backend): cuando el endpoint GET /api/v1/content/donation-info
+// (T059-T060) esté disponible, cambiar el hardcoded por un fetch server-side
+// con revalidación diaria. Mantener este fallback estático en caso de que
+// el backend caiga (SC-011).
+//
+// Prerender: página 100% estática — mejor Lighthouse mobile, sirve cacheada.
 export const prerender = true;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const REQUISITOS: readonly string[] = [
+  'Cédula de identidad vigente (obligatoria; debe presentarse el día de la cita).',
+  'Edad: entre 18 y 60 años.',
+  'Peso: mínimo 50 kg.',
+  'Salud general: sentirse bien, sin gripe ni fiebre.',
+  'Alimentación: venir bien desayunado. No presentarse en ayunas.',
+  'Descanso: haber dormido bien la noche anterior.',
+];
+
+// Marcamos con `excluyente=true` los criterios que impiden donar de manera
+// definitiva (spec § "Consideraciones y criterios de exclusión"). Se
+// diferencian visualmente con color + icono textual para no depender solo
+// del color (FR-002 + WCAG SC 1.4.1).
+interface Consideracion {
+  titulo: string;
+  descripcion: string;
+  excluyente: boolean;
+}
+
+const CONSIDERACIONES: readonly Consideracion[] = [
+  {
+    titulo: 'Tatuajes y piercings',
+    descripcion: 'Sí puedes donar, siempre que haya pasado al menos 1 año desde el último.',
+    excluyente: false,
+  },
+  {
+    titulo: 'Alcohol',
+    descripcion: 'Evita el consumo 48 a 72 horas antes de la donación.',
+    excluyente: false,
+  },
+  {
+    titulo: 'Salud crónica',
+    descripcion:
+      'NO es posible donar si has tenido hepatitis B o C, VIH, sífilis o problemas cardíacos graves.',
+    excluyente: true,
+  },
+  {
+    titulo: 'Medicamentos',
+    descripcion:
+      'Si estás bajo tratamiento, infórmalo en la entrevista médica presencial en el banco.',
+    excluyente: false,
+  },
+  {
+    titulo: 'Sección especial (consultar con el personal)',
+    descripcion:
+      'Si acabas de pasar una infección, te vacunaste recientemente o donaste hace poco, consulta los tiempos de espera con el personal del banco.',
+    excluyente: false,
+  },
+];
+
+const HOSPITAL = {
+  nombre: 'Banco de Sangre — Hospital Central de San Cristóbal',
+  direccion: 'Avenida Lucio Oquendo, San Cristóbal, Táchira',
+  horario: 'Lunes a viernes · 7:00 a 12:00',
+  mapUrl: 'https://maps.google.com/?q=Hospital+Central+San+Crist%C3%B3bal+T%C3%A1chira',
+};
 ---
 
 <BaseLayout
-  title="DonemosSC — Agendamiento de citas"
-  description="Sistema de agendamiento de citas para donación de sangre — Hospital Central de San Cristóbal."
+  title="Donar sangre en San Cristóbal — Agenda tu cita"
+  description="Agenda tu cita para donar sangre en el Banco de Sangre del Hospital Central de San Cristóbal, Táchira. Requisitos, criterios y agendamiento en menos de 90 segundos."
 >
-  <h1 class="text-3xl font-bold text-primary">DonemosSC</h1>
-  <p class="mt-4 text-lg">
-    Scaffolding inicial. El sitio real se construye en las Fases 3–5 del plan.
-  </p>
+  <section class="flex flex-col gap-4">
+    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Donación de sangre</p>
+    <h1 class="text-3xl font-bold leading-tight text-ink sm:text-4xl">
+      Agenda tu cita para donar sangre.
+    </h1>
+    <p class="text-lg text-ink">
+      El Banco de Sangre del Hospital Central de San Cristóbal atiende con cita previa. En menos de
+      90 segundos eliges tu horario, dejas tus datos y recibes un comprobante para presentar el día
+      de la donación.
+    </p>
+    <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+      <a
+        href="/agendar"
+        class="inline-flex min-h-touch items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-semibold text-paper transition-colors duration-[220ms] hover:bg-primary-800 sm:min-w-[12rem]"
+      >
+        Agendar cita ahora
+      </a>
+      <a
+        href="/consultar"
+        class="inline-flex min-h-touch items-center justify-center rounded-md border border-ink px-6 py-3 text-base font-semibold text-ink transition-colors duration-[220ms] hover:bg-paper-warm sm:min-w-[12rem]"
+      >
+        Consultar mi cita
+      </a>
+    </div>
+  </section>
+
+  <section class="mt-12 flex flex-col gap-4" aria-labelledby="requisitos-title">
+    <h2 id="requisitos-title" class="text-2xl font-bold text-ink">Requisitos para donar</h2>
+    <ul class="flex flex-col gap-2">
+      {
+        REQUISITOS.map((req) => (
+          <li class="flex items-start gap-3 rounded-md border border-neutral-200 bg-paper-warm p-3">
+            <span aria-hidden="true" class="mt-0.5 text-primary">
+              ✓
+            </span>
+            <span class="text-base text-ink">{req}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="mt-12 flex flex-col gap-4" aria-labelledby="consideraciones-title">
+    <h2 id="consideraciones-title" class="text-2xl font-bold text-ink">¿Puedo donar si…?</h2>
+    <p class="text-base text-ink-700">
+      Estas son las consideraciones y los criterios de exclusión. Los marcados como <strong
+        >Excluyente</strong
+      > impiden la donación de manera definitiva.
+    </p>
+    <ul class="flex flex-col gap-3">
+      {
+        CONSIDERACIONES.map((c) => (
+          <li
+            class={[
+              'flex flex-col gap-1 rounded-md border p-4',
+              c.excluyente
+                ? 'border-primary bg-primary-50'
+                : 'border-neutral-200 bg-paper',
+            ].join(' ')}
+          >
+            <div class="flex items-center gap-2">
+              <span aria-hidden="true" class={c.excluyente ? 'text-primary' : 'text-ink-700'}>
+                {c.excluyente ? '⚠' : 'ℹ'}
+              </span>
+              <h3 class="text-base font-semibold text-ink">{c.titulo}</h3>
+              {c.excluyente && (
+                <span class="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-paper">
+                  Excluyente
+                </span>
+              )}
+            </div>
+            <p class="text-base text-ink">{c.descripcion}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="text-sm text-ink-700">
+      La verificación clínica final la realiza el personal del banco durante la entrevista médica.
+    </p>
+  </section>
+
+  <section class="mt-12 flex flex-col gap-4" aria-labelledby="hospital-title">
+    <h2 id="hospital-title" class="text-2xl font-bold text-ink">¿Dónde donar?</h2>
+    <div class="rounded-md border border-neutral-200 bg-paper-warm p-4">
+      <p class="text-base font-semibold text-ink">{HOSPITAL.nombre}</p>
+      <p class="mt-1 text-base text-ink-700">{HOSPITAL.direccion}</p>
+      <p class="mt-1 text-base text-ink-700">{HOSPITAL.horario}</p>
+      <a
+        href={HOSPITAL.mapUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-3 inline-flex min-h-touch items-center justify-center rounded-md border border-primary px-6 py-2 text-base font-medium text-primary transition-colors duration-[220ms] hover:bg-primary-50"
+      >
+        Ver ubicación en el mapa
+      </a>
+    </div>
+  </section>
 </BaseLayout>

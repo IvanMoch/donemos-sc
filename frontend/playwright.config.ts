@@ -25,7 +25,10 @@ const config: PlaywrightTestConfig = {
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    locale: 'es-VE',
+    // UI en español de Colombia (decisión del cliente: donantes cercanos a
+    // Cúcuta/Táchira, se prefiere tuteo sobre voseo). El hospital sigue
+    // físicamente en Táchira → timezone se mantiene en America/Caracas.
+    locale: 'es-CO',
     timezoneId: 'America/Caracas',
   },
   projects: [

@@ -123,7 +123,7 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Frontend**
 
-- [ ] T053 [P] [US1] Vitest unit para `Wizard` state machine en `frontend/src/components/wizard/wizard-state.test.ts`
+- [X] T053 [P] [US1] Vitest unit para `Wizard` state machine en `frontend/src/components/wizard/wizard-state.test.ts`
 - [ ] T054 [P] [US1] Playwright E2E happy path `<90s` en `frontend/test/e2e/us1-happy-path.spec.ts` (emulador Pixel 5, red 3G lenta, incluye assertion de tiempo)
 - [ ] T055 [P] [US1] Playwright E2E checkbox de elegibilidad obligatorio en `frontend/test/e2e/us1-eligibility-required.spec.ts` (botón "Confirmar" queda deshabilitado sin marcar)
 - [ ] T056 [P] [US1] Playwright E2E kill switch redirect en `frontend/test/e2e/us1-kill-switch.spec.ts` (con kill switch activo, `/agendar` redirige a `/kill-switch-activo`)
@@ -163,23 +163,23 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Frontend — Landing**
 
-- [ ] T073 [P] [US1] Crear `frontend/src/pages/index.astro` (landing) con encabezado hospital, botón CTA "Agendar cita", 6 requisitos y 5 consideraciones en dos secciones, link al mapa, todo hidratado desde `GET /content/donation-info` en tiempo de build (SSG parcial) con revalidación a runtime si el flag lo requiere
-- [ ] T074 [P] [US1] Crear `frontend/src/pages/kill-switch-activo.astro` (mensaje "Agendamiento temporalmente cerrado" + explicación breve)
+- [X] T073 [P] [US1] Crear `frontend/src/pages/index.astro` (landing) con encabezado hospital, botón CTA "Agendar cita", 6 requisitos y 5 consideraciones en dos secciones, link al mapa, todo hidratado desde `GET /content/donation-info` en tiempo de build (SSG parcial) con revalidación a runtime si el flag lo requiere
+- [X] T074 [P] [US1] Crear `frontend/src/pages/kill-switch-activo.astro` (mensaje "Agendamiento temporalmente cerrado" + explicación breve)
 
 **Frontend — Wizard**
 
-- [ ] T075 [P] [US1] Crear `frontend/src/components/wizard/WizardShell.tsx` (isla React) con máquina de estados por pasos, barra `role="progressbar"`, región `aria-live="polite"` y manejo de foco al `<h1>` de cada paso (research §7)
-- [ ] T076 [P] [US1] Crear `frontend/src/components/wizard/StepIntro.tsx` (paso 1: recordatorio + checkbox de auto-declaración) usando `Checkbox` (T041)
-- [ ] T077 [P] [US1] Crear `frontend/src/components/wizard/StepSlot.tsx` (paso 2: listado de slots consumiendo `GET /slots` con `remainingCapacity`) — sin dropdown; opciones tipo radio card grandes (target ≥44px)
-- [ ] T078 [P] [US1] Crear `frontend/src/components/wizard/StepIdentity.tsx` (paso 3: nombre, apellido, cédula) usando `TextField` (T040) + `react-hook-form` con `zodResolver` de esquema compartido
-- [ ] T079 [P] [US1] Crear `frontend/src/components/wizard/StepConfirm.tsx` (paso 4: revisión + botón confirmar; ejecuta POST a `/appointments`)
-- [ ] T080 [US1] Crear `frontend/src/pages/agendar/index.astro` que renderiza `WizardShell` en el server e hidrata en el client; server-side chequea `GET /system/status`, redirige a `/kill-switch-activo` si `appointmentsDisabled=true`
-- [ ] T081 [P] [US1] Crear `frontend/src/components/wizard/SuccessScreen.tsx` con: código en fuente monospace grande, botón "Descargar comprobante" (usa `window.print()` con hoja `@media print` optimizada), datos de hospital + mapa + recordatorios (FR-009)
-- [ ] T082 [P] [US1] Crear `frontend/src/styles/print.css` que oculta navegación e imprime solo el bloque del comprobante
+- [X] T075 [P] [US1] Crear `frontend/src/components/wizard/WizardShell.tsx` (isla React) con máquina de estados por pasos, barra `role="progressbar"`, región `aria-live="polite"` y manejo de foco al `<h1>` de cada paso (research §7)
+- [X] T076 [P] [US1] Crear `frontend/src/components/wizard/StepIntro.tsx` (paso 1: recordatorio + checkbox de auto-declaración) usando `Checkbox` (T041)
+- [X] T077 [P] [US1] Crear `frontend/src/components/wizard/StepSlot.tsx` (paso 2: listado de slots consumiendo `GET /slots` con `remainingCapacity`) — sin dropdown; opciones tipo radio card grandes (target ≥44px)
+- [X] T078 [P] [US1] Crear `frontend/src/components/wizard/StepIdentity.tsx` (paso 3: nombre, apellido, cédula) usando `TextField` (T040) + `react-hook-form` con `zodResolver` de esquema compartido
+- [X] T079 [P] [US1] Crear `frontend/src/components/wizard/StepConfirm.tsx` (paso 4: revisión + botón confirmar; ejecuta POST a `/appointments`)
+- [X] T080 [US1] Crear `frontend/src/pages/agendar/index.astro` que renderiza `WizardShell` en el server e hidrata en el client; server-side chequea `GET /system/status`, redirige a `/kill-switch-activo` si `appointmentsDisabled=true`
+- [X] T081 [P] [US1] Crear `frontend/src/components/wizard/SuccessScreen.tsx` con: código en fuente monospace grande, botón "Descargar comprobante" (usa `window.print()` con hoja `@media print` optimizada), datos de hospital + mapa + recordatorios (FR-009)
+- [X] T082 [P] [US1] Crear `frontend/src/styles/print.css` que oculta navegación e imprime solo el bloque del comprobante
 
 **Frontend — Animaciones + a11y**
 
-- [ ] T083 [US1] Añadir transiciones CSS en `frontend/src/components/wizard/WizardShell.tsx` con `translate + opacity` de 220ms + fallback a `prefers-reduced-motion`; documentar en cabecera del archivo el porqué de no usar Framer Motion (research §8)
+- [X] T083 [US1] Añadir transiciones CSS en `frontend/src/components/wizard/WizardShell.tsx` con `translate + opacity` de 220ms + fallback a `prefers-reduced-motion`; documentar en cabecera del archivo el porqué de no usar Framer Motion (research §8)
 
 **Checkpoint MVP**: US1 completo. El flujo público funciona end-to-end, cumple <90s, AAA, mobile-first, y se puede demostrar independientemente. Es el MVP entregable.
 
@@ -323,7 +323,7 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 - [ ] T144 [P] Endpoint `/health/live` y `/health/ready` diferenciados en `backend/src/modules/health/health.controller.ts` (ready incluye ping Postgres, live solo proceso vivo)
 - [ ] T145 [P] Snapshot del OpenAPI generado contra `contracts/public-api.openapi.yaml` y `contracts/admin-api.openapi.yaml` en CI (job `openapi-check` en `.github/workflows/ci.yml`) — falla el build si divergen
 - [ ] T146 [P] Lighthouse mobile budget en `.github/workflows/ci.yml` con umbrales: Performance ≥90, Accessibility ≥95, Best Practices ≥90; corre sobre landing y `/agendar`
-- [ ] T147 [P] Actualizar `README.md` raíz con: comandos `pnpm dev`/`pnpm test`/`pnpm build`, referencia a `specs/001-blood-donation-scheduling/quickstart.md`, y política de branches (Git Flow) según Constitución Principio VI
+- [X] T147 [P] Actualizar `README.md` raíz con: comandos `pnpm dev`/`pnpm test`/`pnpm build`, referencia a `specs/001-blood-donation-scheduling/quickstart.md`, y política de branches (Git Flow) según Constitución Principio VI
 - [ ] T148 [P] Añadir `CONTRIBUTING.md` breve indicando: TDD obligatorio, comentarios en español, checklist AAA + mobile antes de PR
 - [ ] T149 Correr `pnpm test:smoke` (Validaciones 1, 4, 6, 8, 10, 11 de `quickstart.md`) en verde end-to-end
 - [ ] T150 Verificar contrastes finales de la paleta con `pa11y` sobre landing, wizard, admin (ampliación de T146) y ajustar tokens si algún pair queda bajo 7:1

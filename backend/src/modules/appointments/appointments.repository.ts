@@ -23,6 +23,26 @@ export interface CreatedAppointment {
   slot: { id: string; date: string; startTime: string; endTime: string; remainingCapacity: number };
 }
 
+export interface AppointmentDetail {
+  appointmentId: string;
+  code: string;
+  status: string;
+  cancellationReason: string | null;
+  slot: { id: string; date: string; startTime: string; endTime: string; remainingCapacity: number };
+}
+
+interface FilaDetalle {
+  appointmentId: string;
+  code: string;
+  status: string;
+  cancellationReason: string | null;
+  slotId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  remainingCapacity: number;
+}
+
 interface FilaSlot {
   id: string;
   capacity: number;
@@ -119,5 +139,128 @@ export class AppointmentsRepository {
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
+  }
+
+  /** Busca la cita por la pareja código+cédula (autorización). null si no existe. */
+  async findByCodeAndIdNumber(code: string, idNumber: string): Promise<AppointmentDetail | null> {
+    const filas = await this.prisma.$queryRawUnsafe<FilaDetalle[]>(
+      `SELECT a.id AS "appointmentId", a.code, a.status,
+              a.cancellation_reason AS "cancellationReason",
+              s.id AS "slotId",
+              to_char(s.date, 'YYYY-MM-DD')    AS "date",
+              to_char(s.start_time, 'HH24:MI') AS "startTime",
+              to_char(s.end_time, 'HH24:MI')   AS "endTime",
+              (s.capacity - (SELECT count(*) FROM appointment x WHERE x.slot_id = s.id AND x.status = 'active'))::int AS "remainingCapacity"
+         FROM appointment a
+         JOIN slot s ON s.id = a.slot_id
+        WHERE a.code = $1 AND a.id_number = $2`,
+      code,
+      idNumber,
+    );
+    const fila = filas[0];
+    return fila ? this.aDetalle(fila) : null;
+  }
+
+  /** Cancela por decisión del donante (cancelled_by_donor). Devuelve el detalle actualizado. */
+  async cancelByDonor(appointmentId: string): Promise<AppointmentDetail> {
+    await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: { status: 'cancelled_by_donor', cancelledAt: new Date() },
+    });
+    return this.detalleObligatorioPorId(appointmentId);
+  }
+
+  /**
+   * Reagenda moviendo la cita al nuevo slot (mismo código, sigue activa). El cupo
+   * del slot viejo se libera solo (se cuenta por citas activas) y el nuevo se
+   * consume. SERIALIZABLE + FOR UPDATE + reintento: dos reagendamientos al mismo
+   * cupo se serializan y el perdedor recibe slot_full.
+   */
+  async rescheduleInTransaction(appointmentId: string, newSlotId: string): Promise<AppointmentDetail> {
+    const MAX_INTENTOS = 3;
+    for (let intento = 1; ; intento += 1) {
+      try {
+        return await this.ejecutarReschedule(appointmentId, newSlotId);
+      } catch (error) {
+        const esConflictoSerializacion =
+          error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034';
+        if (esConflictoSerializacion && intento < MAX_INTENTOS) continue;
+        throw error;
+      }
+    }
+  }
+
+  private async ejecutarReschedule(appointmentId: string, newSlotId: string): Promise<AppointmentDetail> {
+    await this.prisma.$transaction(
+      async (tx) => {
+        const filas = await tx.$queryRawUnsafe<FilaSlot[]>(
+          `SELECT id, capacity,
+                  to_char(date, 'YYYY-MM-DD')    AS "date",
+                  to_char(start_time, 'HH24:MI') AS "startTime",
+                  to_char(end_time, 'HH24:MI')   AS "endTime"
+             FROM slot
+            WHERE id = $1::uuid AND is_disabled = false
+            FOR UPDATE`,
+          newSlotId,
+        );
+        const slot = filas[0];
+        if (!slot) {
+          throw new NotFoundException({ error: 'slot_not_found', message: 'La nueva franja no existe o no está disponible.' });
+        }
+
+        // Cupo del nuevo slot (esta cita aún vive en el slot viejo, no se cuenta acá).
+        const activas = await tx.appointment.count({
+          where: { slotId: newSlotId, status: 'active', id: { not: appointmentId } },
+        });
+        if (activas >= slot.capacity) {
+          throw new ConflictException({
+            error: 'slot_full',
+            code: 'slot_full',
+            message: 'La nueva franja ya no tiene cupo.',
+          });
+        }
+
+        await tx.appointment.update({ where: { id: appointmentId }, data: { slotId: newSlotId } });
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+    return this.detalleObligatorioPorId(appointmentId);
+  }
+
+  private async detalleObligatorioPorId(appointmentId: string): Promise<AppointmentDetail> {
+    const filas = await this.prisma.$queryRawUnsafe<FilaDetalle[]>(
+      `SELECT a.id AS "appointmentId", a.code, a.status,
+              a.cancellation_reason AS "cancellationReason",
+              s.id AS "slotId",
+              to_char(s.date, 'YYYY-MM-DD')    AS "date",
+              to_char(s.start_time, 'HH24:MI') AS "startTime",
+              to_char(s.end_time, 'HH24:MI')   AS "endTime",
+              (s.capacity - (SELECT count(*) FROM appointment x WHERE x.slot_id = s.id AND x.status = 'active'))::int AS "remainingCapacity"
+         FROM appointment a
+         JOIN slot s ON s.id = a.slot_id
+        WHERE a.id = $1::uuid`,
+      appointmentId,
+    );
+    const fila = filas[0];
+    if (!fila) {
+      throw new NotFoundException({ error: 'not_found', message: 'No encontramos una cita con esos datos.' });
+    }
+    return this.aDetalle(fila);
+  }
+
+  private aDetalle(fila: FilaDetalle): AppointmentDetail {
+    return {
+      appointmentId: fila.appointmentId,
+      code: fila.code,
+      status: fila.status,
+      cancellationReason: fila.cancellationReason,
+      slot: {
+        id: fila.slotId,
+        date: fila.date,
+        startTime: fila.startTime,
+        endTime: fila.endTime,
+        remainingCapacity: fila.remainingCapacity,
+      },
+    };
   }
 }

@@ -1,0 +1,14 @@
+# DonemosSC — servicios de desarrollo local.
+# Este esqueleto se materializa completamente en T009 (Postgres 16 + volumen persistente).
+# Por ahora define únicamente la red compartida y el placeholder del servicio Postgres
+# para que `docker compose config` valide sin errores.
+
+services:
+  postgres:
+    # T009 completará la configuración con imagen postgres:16, usuario donemos,
+    # base donemos, puerto 5432 y volumen persistente donemos-pg-data.
+    image: postgres:16
+    profiles: ["disabled-until-T009"]
+
+volumes:
+  donemos-pg-data:

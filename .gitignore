@@ -9,6 +9,11 @@ build/
 .turbo/
 .next/
 
+# Cachés de herramientas
+.eslintcache
+.stylelintcache
+.parcel-cache/
+
 # Coverage y reports
 coverage/
 playwright-report/

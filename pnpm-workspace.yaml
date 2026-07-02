@@ -1,0 +1,6 @@
+# DonemosSC monorepo — declaración de workspaces pnpm.
+# El orden es indicativo: shared se resuelve primero (los demás dependen de él).
+packages:
+  - 'packages/*'
+  - 'backend'
+  - 'frontend'

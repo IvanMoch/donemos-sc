@@ -5,16 +5,26 @@
  * datos y para autenticarse como admin. Todas las llamadas viajan por el
  * mismo endpoint que usa el frontend en producción — así también validamos
  * el contrato desde otro consumidor (Principio I: solo API propia).
+ *
+ * NOTA sobre baseURL: `playwrightRequest.newContext({ baseURL })` resuelve
+ * paths con leading `/` como absolutos y descarta el path del baseURL. Para
+ * conservar el prefijo `/api/v1`, construimos URLs completas usando
+ * `apiUrl()`; no confiamos en el auto-join del contexto.
  */
 import { request as playwrightRequest, type APIRequestContext, type Page } from '@playwright/test';
 
-export const API_BASE =
-  process.env.PLAYWRIGHT_API_BASE_URL ?? process.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000/api/v1';
+const RAW_API_BASE =
+  process.env.PLAYWRIGHT_API_BASE_URL ?? process.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api/v1';
+export const API_BASE = RAW_API_BASE.replace(/\/$/, '');
 export const ADMIN_USERNAME = process.env.PLAYWRIGHT_ADMIN_USERNAME ?? 'admin';
 export const ADMIN_PASSWORD = process.env.PLAYWRIGHT_ADMIN_PASSWORD ?? 'admin1234';
 
+function apiUrl(path: string): string {
+  return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 export async function createApiContext(): Promise<APIRequestContext> {
-  return playwrightRequest.newContext({ baseURL: API_BASE });
+  return playwrightRequest.newContext();
 }
 
 export interface CreatedSlot {
@@ -32,7 +42,7 @@ export interface AdminAuth {
 /** Login admin y devuelve un contexto API con cookie de sesión pegada. */
 export async function loginAdmin(): Promise<AdminAuth> {
   const api = await createApiContext();
-  const res = await api.post('/admin/auth/login', {
+  const res = await api.post(apiUrl('/admin/auth/login'), {
     data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
   });
   if (res.status() !== 204) {
@@ -46,7 +56,7 @@ export async function ensureAvailableSlot(auth: AdminAuth): Promise<CreatedSlot>
   const manana = new Date();
   manana.setDate(manana.getDate() + 1);
   const fecha = manana.toISOString().slice(0, 10);
-  const res = await auth.api.post('/admin/slots', {
+  const res = await auth.api.post(apiUrl('/admin/slots'), {
     data: {
       date: fecha,
       startTime: '07:00',
@@ -66,9 +76,27 @@ function isFinDeSemana(d: Date): boolean {
   return dow === 0 || dow === 6;
 }
 
+/** Crea una franja específica (usado por reschedule para tener un segundo destino). */
+export async function createSlot(
+  auth: AdminAuth,
+  data: {
+    date: string;
+    startTime: string;
+    endTime: string;
+    capacity: number;
+    isExceptionHours?: boolean;
+  },
+): Promise<CreatedSlot> {
+  const res = await auth.api.post(apiUrl('/admin/slots'), { data });
+  if (res.status() >= 400 && res.status() !== 409) {
+    throw new Error(`No se pudo crear slot ${data.date} ${data.startTime}: ${await res.text()}`);
+  }
+  return (await res.json()) as CreatedSlot;
+}
+
 /** Activa/desactiva el kill switch como admin (para tests que lo requieran). */
 export async function setKillSwitch(auth: AdminAuth, enabled: boolean): Promise<void> {
-  const res = await auth.api.post('/admin/system-state/kill-switch', {
+  const res = await auth.api.post(apiUrl('/admin/system-state/kill-switch'), {
     data: { enabled, reason: 'e2e test' },
   });
   if (res.status() >= 400) {
@@ -95,7 +123,7 @@ export async function createAppointment(
 ): Promise<{ code: string; idNumber: string }> {
   const api = await createApiContext();
   const idNumber = overrides?.idNumber ?? uniqueIdNumber();
-  const res = await api.post('/appointments', {
+  const res = await api.post(apiUrl('/appointments'), {
     data: {
       firstName: overrides?.firstName ?? 'Ana',
       lastName: overrides?.lastName ?? 'Barreras',

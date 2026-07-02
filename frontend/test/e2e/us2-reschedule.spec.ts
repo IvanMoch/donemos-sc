@@ -9,7 +9,13 @@
  *  - Se muestra pantalla de "Cita reagendada" con el nuevo horario.
  */
 import { test, expect } from '@playwright/test';
-import { createAppointment, ensureAvailableSlot, loginAdmin, setKillSwitch } from './helpers';
+import {
+  createAppointment,
+  createSlot,
+  ensureAvailableSlot,
+  loginAdmin,
+  setKillSwitch,
+} from './helpers';
 
 test.describe('US2 — reagendamiento', () => {
   test('donante puede reagendar y el código se conserva', async ({ page }) => {
@@ -23,18 +29,13 @@ test.describe('US2 — reagendamiento', () => {
     const fecha = manana.toISOString().slice(0, 10);
     const dow = manana.getDay();
     const excep = dow === 0 || dow === 6;
-    const res = await auth.api.post('/admin/slots', {
-      data: {
-        date: fecha,
-        startTime: '08:00',
-        endTime: '08:35',
-        capacity: 5,
-        isExceptionHours: excep,
-      },
+    await createSlot(auth, {
+      date: fecha,
+      startTime: '08:00',
+      endTime: '08:35',
+      capacity: 5,
+      isExceptionHours: excep,
     });
-    if (res.status() >= 400 && res.status() !== 409) {
-      throw new Error(`No pude crear segundo slot: ${await res.text()}`);
-    }
 
     const { code, idNumber } = await createAppointment(slot1.id);
 

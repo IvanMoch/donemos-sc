@@ -1,6 +1,24 @@
 {
   // Config usada por `nest build`: excluye tests para que dist/ solo
   // contenga código de producción.
+  //
+  // Anula los `paths` heredados hacia la FUENTE de @donemos/shared: en build
+  // el backend debe resolver el paquete COMPILADO (node_modules → dist/index.js
+  // + .d.ts), no arrastrar la fuente TS a su propio dist (issue #154). Con
+  // paths vacío, la resolución de Node usa el symlink de pnpm y rootDir queda
+  // en src/, de modo que la salida es dist/main.js (no dist/backend/src/...).
+  // Requiere que packages/shared esté compilado antes (pnpm -r build lo hace
+  // en orden topológico por la workspace dependency).
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "paths": {},
+    // Sin incremental en el build de producción: evita que un .tsbuildinfo
+    // obsoleto (de una config previa) haga que tsc omita el emit.
+    "incremental": false
+  },
+  // Solo el código de producción de src/. prisma/seed.ts se ejecuta con ts-node
+  // (prisma db seed), no se compila a dist/.
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "jest.config.ts"]
 }

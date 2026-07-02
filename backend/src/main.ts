@@ -1,16 +1,27 @@
 /**
- * Bootstrap del backend DonemosSC.
+ * Bootstrap del backend DonemosSC (T033).
  *
- * Levanta NestJS con el prefijo global `/api/v1` (contrato REST versionado,
- * plan.md § Summary). El wire completo de hardening — helmet, cookie-parser,
- * throttler, pino, ZodValidationPipe, filtros e interceptores globales —
- * se añade en T033 (Fase 2); aquí solo lo mínimo para que el proceso arranque.
+ * Wire de hardening HTTP y logging:
+ *  - helmet: cabeceras de seguridad (CSP restrictivo se afina en T143).
+ *  - cookie-parser: necesario para leer la cookie `session` del AdminGuard.
+ *  - pino como logger global vía NestPinoLogger.
+ *  - prefijo global /api/v1 (contrato REST versionado, Principio I).
+ *
+ * Los pipes/filtros/interceptores globales y el ThrottlerModule (dos buckets)
+ * se registran en AppModule para participar de la inyección de dependencias.
  */
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { NestPinoLogger } from './common/logger/nest-pino.logger';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(new NestPinoLogger());
+
+  app.use(helmet());
+  app.use(cookieParser());
 
   // Todas las rutas públicas y admin viven bajo /api/v1 (Principio I).
   app.setGlobalPrefix('api/v1');

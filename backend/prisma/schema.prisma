@@ -1,7 +1,13 @@
 // Esquema Prisma de DonemosSC — única fuente de verdad del modelo relacional
-// (research §2: Prisma 5 sobre PostgreSQL 16, BD normalizada a 3NF).
-// Los modelos AdminUser, Slot, Appointment, SystemState y AdminAuditLog
-// se añaden en T021 (Fase 2) conforme a data-model.md.
+// (research §2: Prisma 5 sobre PostgreSQL 16, normalizado a 3NF conforme a
+// data-model.md). Convenciones: tablas y columnas en snake_case (@map/@@map),
+// PKs UUID salvo system_state (singleton SMALLINT id=1), timestamps TIMESTAMPTZ.
+//
+// NOTA: Prisma 5 no expresa CHECK constraints ni índices parciales de forma
+// declarativa. Esas invariantes (patrón de cédula, status enum, end_time >
+// start_time, id=1 del singleton, y el UNIQUE parcial de una cita activa por
+// cédula) se añaden como SQL crudo en la migración inicial. El test de
+// integración T024 (test/integration/schema.spec.ts) las verifica.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,4 +16,108 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+/// Personal autorizado del banco. En el MVP hay un único registro (FR-023a);
+/// el esquema admite varios para no requerir migración futura.
+model AdminUser {
+  id           String   @id @default(uuid()) @db.Uuid
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  disabledSlots        Slot[]
+  cancelledAppointments Appointment[]
+  systemStateChanges   SystemState[]
+  auditLogs            AdminAuditLog[]
+
+  @@map("admin_user")
+}
+
+/// Franja horaria con capacidad configurable en la que el banco atiende.
+model Slot {
+  id                String    @id @default(uuid()) @db.Uuid
+  date              DateTime  @db.Date
+  startTime         DateTime  @map("start_time") @db.Time(0)
+  endTime           DateTime  @map("end_time") @db.Time(0)
+  capacity          Int       @db.SmallInt
+  isDisabled        Boolean   @default(false) @map("is_disabled")
+  disabledAt        DateTime? @map("disabled_at") @db.Timestamptz(6)
+  disabledByAdminId String?   @map("disabled_by_admin_id") @db.Uuid
+  disabledReason    String?   @map("disabled_reason")
+  isExceptionHours  Boolean   @default(false) @map("is_exception_hours")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  disabledByAdmin AdminUser?    @relation(fields: [disabledByAdminId], references: [id], onDelete: SetNull)
+  appointments    Appointment[]
+
+  @@unique([date, startTime, endTime])
+  @@index([date, isDisabled])
+  @@index([date])
+  @@map("slot")
+}
+
+/// Reserva de un donante en una franja. Contiene PII (nombre, apellido, cédula)
+/// que se enmascara en logs y se anonimiza a los 90 días (research §12).
+model Appointment {
+  id                    String    @id @default(uuid()) @db.Uuid
+  code                  String    @unique
+  slotId                String    @map("slot_id") @db.Uuid
+  firstName             String    @map("first_name")
+  lastName              String    @map("last_name")
+  idNumber              String    @map("id_number")
+  status                String    @default("active")
+  eligibilityDeclaredAt DateTime  @map("eligibility_declared_at") @db.Timestamptz(6)
+  cancelledAt           DateTime? @map("cancelled_at") @db.Timestamptz(6)
+  cancelledByAdminId    String?   @map("cancelled_by_admin_id") @db.Uuid
+  cancellationReason    String?   @map("cancellation_reason")
+  redactedAt            DateTime? @map("redacted_at") @db.Timestamptz(6)
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  slot             Slot       @relation(fields: [slotId], references: [id], onDelete: Restrict)
+  cancelledByAdmin AdminUser? @relation(fields: [cancelledByAdminId], references: [id], onDelete: SetNull)
+
+  @@index([slotId, status])
+  @@index([createdAt])
+  @@map("appointment")
+}
+
+/// Kill switch global (research §5). Fila única id = 1; solo se hace UPDATE.
+model SystemState {
+  id                   Int       @id @default(1) @db.SmallInt
+  appointmentsDisabled Boolean   @default(false) @map("appointments_disabled")
+  disabledAt           DateTime? @map("disabled_at") @db.Timestamptz(6)
+  disabledByAdminId    String?   @map("disabled_by_admin_id") @db.Uuid
+  disabledReason       String?   @map("disabled_reason")
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  disabledByAdmin AdminUser? @relation(fields: [disabledByAdminId], references: [id], onDelete: SetNull)
+
+  @@map("system_state")
+}
+
+/// Registro append-only de acciones administrativas (data-model.md §5).
+model AdminAuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  adminId    String   @map("admin_id") @db.Uuid
+  action     String
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id") @db.Uuid
+  payload    Json?    @db.JsonB
+  ipAddress  String?  @map("ip_address") @db.Inet
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // El log es append-only y adminId es NOT NULL: Restrict impide borrar un
+  // admin con historial de auditoría (data-model.md documenta SET NULL, pero
+  // eso es incompatible con una columna NOT NULL — Restrict preserva la traza).
+  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  @@index([adminId, createdAt])
+  @@index([action, createdAt])
+  @@map("admin_audit_log")
 }

@@ -11,7 +11,12 @@
  * conservar el prefijo `/api/v1`, construimos URLs completas usando
  * `apiUrl()`; no confiamos en el auto-join del contexto.
  */
-import { request as playwrightRequest, type APIRequestContext, type Page } from '@playwright/test';
+import {
+  request as playwrightRequest,
+  type APIRequestContext,
+  type BrowserContext,
+  type Page,
+} from '@playwright/test';
 
 const RAW_API_BASE =
   process.env.PLAYWRIGHT_API_BASE_URL ?? process.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api/v1';
@@ -173,4 +178,40 @@ export async function createAppointment(
  */
 export async function expectFocusedHeading(page: Page, text: string | RegExp): Promise<void> {
   await page.getByRole('heading', { name: text }).waitFor({ state: 'visible' });
+}
+
+/**
+ * Autentica al admin en el `BrowserContext` sin pasar por el formulario /admin/login.
+ *
+ * Motivación: `@Throttle` del backend limita login a 5/min por IP. Si cada test
+ * hace login vía UI, con varios tests paralelos disparamos 429 y el flujo se
+ * rompe. Esta helper:
+ *   1. Llama al endpoint POST /admin/auth/login con backoff (loginAdmin).
+ *   2. Extrae la cookie de sesión del `Set-Cookie` response.
+ *   3. La setea en el `BrowserContext` para localhost:4321 y localhost:3001.
+ *
+ * Los tests deben preferir `authenticateAdmin(page.context())` antes de navegar
+ * a rutas protegidas — evita interactuar con /admin/login y el throttle.
+ */
+export async function authenticateAdmin(browserContext: BrowserContext): Promise<void> {
+  const auth = await loginAdmin();
+  const cookies = await auth.api.storageState();
+  const sessionCookie = cookies.cookies.find((c) => c.name === 'session');
+  if (!sessionCookie) {
+    throw new Error('loginAdmin no devolvió cookie `session` para reutilizar.');
+  }
+  // Fijar la cookie sobre localhost sin puerto para que viaje tanto a
+  // localhost:4321 (frontend SSR) como a localhost:3001 (backend directo).
+  await browserContext.addCookies([
+    {
+      name: 'session',
+      value: sessionCookie.value,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      secure: sessionCookie.secure,
+      sameSite: sessionCookie.sameSite,
+      expires: sessionCookie.expires,
+    },
+  ]);
 }

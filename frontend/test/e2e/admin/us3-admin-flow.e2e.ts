@@ -4,9 +4,19 @@
  * Cubre desde login → panel → crear franja → listar citas → descargar PDF →
  * activar/desactivar kill switch. Corre en el proyecto `desktop` de Playwright
  * (el panel administrativo puede asumir viewport grande).
+ *
+ * El login por UI se prueba en un test dedicado (verifica que el formulario
+ * navega a /admin/panel). Los pasos post-login autentican vía cookie inyectada
+ * (`authenticateAdmin`) para no chocar con el throttle 5/min de login.
  */
 import { test, expect } from '@playwright/test';
-import { ADMIN_USERNAME, ADMIN_PASSWORD, loginAdmin, setKillSwitch } from '../helpers';
+import {
+  ADMIN_USERNAME,
+  ADMIN_PASSWORD,
+  authenticateAdmin,
+  loginAdmin,
+  setKillSwitch,
+} from '../helpers';
 
 test.describe('US3 — flujo administrativo completo', () => {
   test.beforeAll(async () => {
@@ -14,19 +24,19 @@ test.describe('US3 — flujo administrativo completo', () => {
     await setKillSwitch(auth, false);
   });
 
-  test('login → crear franja → listar citas → PDF → kill switch on/off', async ({ page }) => {
-    // 1. Login
+  test('login por UI redirige a /admin/panel', async ({ page }) => {
     await page.goto('/admin/login');
     await page.getByLabel(/usuario/i).fill(ADMIN_USERNAME);
     await page.getByLabel(/contraseña/i).fill(ADMIN_PASSWORD);
     await page.getByRole('button', { name: /iniciar sesión/i }).click();
 
-    // Redirect a /admin/panel
-    await expect(page).toHaveURL(/\/admin\/panel/);
+    await page.waitForURL(/\/admin\/panel/, { timeout: 15_000 });
     await expect(page.getByRole('heading', { name: /estado del sistema/i })).toBeVisible();
+  });
 
-    // 2. Navegar a Franjas
-    await page.getByRole('link', { name: /franjas horarias/i }).click();
+  test('crear franja → citas → PDF → kill switch on/off', async ({ page, context }) => {
+    await authenticateAdmin(context);
+    await page.goto('/admin/franjas');
     await expect(page.getByRole('heading', { name: /^franjas horarias$/i })).toBeVisible();
 
     // Crear una franja para pasado mañana
@@ -48,12 +58,12 @@ test.describe('US3 — flujo administrativo completo', () => {
     // La tabla debe reflejarla
     await expect(page.getByRole('cell', { name: /09:00.*09:35/ })).toBeVisible({ timeout: 5_000 });
 
-    // 3. Navegar a Citas y verificar que el botón PDF exista
+    // Navegar a Citas y verificar que el botón PDF exista
     await page.getByRole('link', { name: /^citas$/i }).click();
     await expect(page.getByRole('heading', { name: /^citas$/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /descargar pdf/i })).toBeVisible();
 
-    // 4. Volver al panel y activar kill switch
+    // Volver al panel y activar kill switch
     await page.getByRole('link', { name: /estado del sistema/i }).click();
     await page.getByRole('button', { name: /cerrar agendamiento/i }).click();
     await page.getByRole('button', { name: /sí, cerrar/i }).click();

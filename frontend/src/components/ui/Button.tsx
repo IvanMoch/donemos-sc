@@ -42,7 +42,11 @@ const LAYOUT_CLASSES = [
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-paper hover:bg-primary-800',
   secondary: 'bg-paper-warm text-ink hover:bg-neutral-200',
-  soft: 'bg-primary-50 text-primary hover:bg-primary-100',
+  // `soft` mantiene el mismo bg-primary-50 en hover porque saltar a
+  // bg-primary-100 (#F6D7DC) bajaba el contraste con text-primary a 6.75
+  // (falla WCAG AAA 7:1). En vez de cambiar el fondo, marcamos el hover
+  // con un ring — feedback visual sin sacrificar contraste.
+  soft: 'bg-primary-50 text-primary hover:ring-2 hover:ring-primary hover:ring-inset',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

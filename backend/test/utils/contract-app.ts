@@ -12,6 +12,8 @@ import { join } from 'node:path';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import * as bcrypt from 'bcrypt';
+import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 
@@ -42,6 +44,8 @@ function asegurarContenedor(): Promise<StartedPostgreSqlContainer> {
 
 /** Crea la app Nest real lista para Supertest, con el prefijo /api/v1. */
 export async function createContractApp(): Promise<{ app: INestApplication; prisma: PrismaService }> {
+  // El JwtModule admin necesita el secreto; en test basta uno determinista.
+  process.env.JWT_SECRET ??= 'test-secret-de-32-caracteres-minimo-xxxx';
   await asegurarContenedor();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication();
@@ -76,6 +80,37 @@ export async function seedSlot(
     },
   });
   return slot.id;
+}
+
+/** Inserta un admin de prueba (bcrypt cost 12) y devuelve su id. */
+export async function seedAdmin(
+  prisma: PrismaService,
+  opts: { username?: string; password?: string; fullName?: string } = {},
+): Promise<string> {
+  const passwordHash = await bcrypt.hash(opts.password ?? 'secreto-de-prueba', 12);
+  const admin = await prisma.adminUser.create({
+    data: {
+      username: opts.username ?? 'admin',
+      passwordHash,
+      fullName: opts.fullName ?? 'Admin de Prueba',
+    },
+  });
+  return admin.id;
+}
+
+/** Hace login y devuelve el valor de la cookie `session` para reusar como header Cookie. */
+export async function loginAndGetCookie(
+  app: INestApplication,
+  username = 'admin',
+  password = 'secreto-de-prueba',
+): Promise<string> {
+  const res = await request(app.getHttpServer())
+    .post('/api/v1/admin/auth/login')
+    .send({ username, password });
+  const setCookie = res.headers['set-cookie'];
+  const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
+  const session = cookies.find((c) => c.startsWith('session='));
+  return session ? session.split(';')[0] : '';
 }
 
 /** Inserta una cita activa de prueba y devuelve su id. */

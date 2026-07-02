@@ -1,0 +1,6 @@
+{
+  // Config usada por `nest build`: excluye tests para que dist/ solo
+  // contenga código de producción.
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "jest.config.ts"]
+}

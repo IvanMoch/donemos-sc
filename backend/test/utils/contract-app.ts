@@ -77,3 +77,23 @@ export async function seedSlot(
   });
   return slot.id;
 }
+
+/** Inserta una cita activa de prueba y devuelve su id. */
+export async function seedActiveAppointment(
+  prisma: PrismaService,
+  slotId: string,
+  opts: { code: string; idNumber: string; firstName?: string; lastName?: string },
+): Promise<string> {
+  const cita = await prisma.appointment.create({
+    data: {
+      code: opts.code,
+      slotId,
+      firstName: opts.firstName ?? 'Ana',
+      lastName: opts.lastName ?? 'Pérez',
+      idNumber: opts.idNumber,
+      status: 'active',
+      eligibilityDeclaredAt: new Date(),
+    },
+  });
+  return cita.id;
+}

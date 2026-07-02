@@ -1,0 +1,21 @@
+---
+/**
+ * /admin/franjas — gestión de franjas horarias (T135).
+ * Todo el CRUD lo maneja la isla React `FranjasPanel`.
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { FranjasPanel } from '../../components/admin/FranjasPanel';
+---
+
+<AdminLayout title="Panel · Franjas horarias" activeTab="franjas">
+  <div class="flex flex-col gap-6">
+    <header class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold text-ink">Franjas horarias</h1>
+      <p class="text-base text-ink-700">
+        Crea, edita y deshabilita franjas. Cuando deshabilites una franja, todas las citas activas
+        se cancelarán automáticamente como <em>cancelled_by_bank</em>.
+      </p>
+    </header>
+    <FranjasPanel client:load />
+  </div>
+</AdminLayout>

@@ -1,0 +1,24 @@
+---
+/**
+ * /admin/login — pantalla de acceso al panel administrativo (T133).
+ * No pasa por el middleware de guard (ver src/middleware.ts) para evitar
+ * el bucle de redirección cuando aún no hay sesión.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { AdminLoginForm } from '../../components/admin/AdminLoginForm';
+---
+
+<BaseLayout
+  title="Panel administrativo — Iniciar sesión"
+  description="Acceso restringido al personal del Banco de Sangre."
+>
+  <section class="flex flex-col gap-4">
+    <p class="text-sm font-semibold uppercase tracking-wide text-primary">Panel administrativo</p>
+    <h1 class="text-2xl font-bold text-ink">Iniciar sesión</h1>
+    <p class="text-base text-ink">
+      Acceso exclusivo del personal del banco. Si olvidaste tu contraseña, contacta al responsable
+      del sistema.
+    </p>
+    <AdminLoginForm client:load />
+  </section>
+</BaseLayout>

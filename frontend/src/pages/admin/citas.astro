@@ -1,0 +1,20 @@
+---
+/**
+ * /admin/citas — listado de citas + export PDF (T136).
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { CitasPanel } from '../../components/admin/CitasPanel';
+---
+
+<AdminLayout title="Panel · Citas" activeTab="citas">
+  <div class="flex flex-col gap-6">
+    <header class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold text-ink">Citas</h1>
+      <p class="text-base text-ink-700">
+        Filtra por rango y estado. El botón "Descargar PDF" genera el reporte para imprimir o
+        archivar; la exportación queda registrada en el log de auditoría.
+      </p>
+    </header>
+    <CitasPanel client:load />
+  </div>
+</AdminLayout>

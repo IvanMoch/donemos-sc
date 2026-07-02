@@ -1,0 +1,23 @@
+---
+/**
+ * /admin/panel — home del panel administrativo (T137).
+ * Muestra la tarjeta grande del kill switch. La navegación superior lleva a
+ * las otras secciones (franjas y citas).
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { KillSwitchPanel } from '../../components/admin/KillSwitchPanel';
+---
+
+<AdminLayout title="Panel · Estado del sistema" activeTab="panel">
+  <div class="flex flex-col gap-6">
+    <header class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold text-ink">Estado del sistema</h1>
+      <p class="text-base text-ink-700">
+        Activa el kill switch si necesitas cerrar temporalmente el agendamiento (falta de reactivos,
+        cierre del banco, etc.). Los donantes ya con cita pueden seguir cancelándola aunque esté
+        cerrado.
+      </p>
+    </header>
+    <KillSwitchPanel client:load />
+  </div>
+</AdminLayout>

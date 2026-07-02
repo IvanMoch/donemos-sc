@@ -86,14 +86,14 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 ### Frontend foundational
 
-- [ ] T034 [P] Configurar `frontend/tailwind.config.mjs` con tokens de color AAA (research §9): `primary #8B1E2D`, `ink #0F172A`, `paper #FFFFFF`, `paper-warm #FAF7F5`, `success #0F5132`; extender `screens` para asegurar mobile-first; agregar plugin custom que aplica `focus-visible: outline 3px offset 2px`
-- [ ] T035 [P] Crear `frontend/src/styles/tokens.css` con variables CSS de la paleta y un bloque `@media (prefers-reduced-motion: reduce)` que reduzca todas las transiciones a `0.01s` y elimine `transform`
-- [ ] T036 [P] Configurar `frontend/astro.config.mjs` con `@astrojs/react`, `@astrojs/tailwind`, `experimental.viewTransitions: true`, `output: 'server'` (SSR necesario para leer estado del kill switch en el server)
-- [ ] T037 [P] Crear `frontend/src/lib/api-client.ts` con `fetch` tipado que use `PUBLIC_API_BASE_URL`, incluya `credentials: 'include'` para endpoints admin y maneje errores estándar; test Vitest previo
-- [ ] T038 [P] Crear `frontend/src/layouts/BaseLayout.astro` con `<html lang="es">`, `<meta viewport>` correcto, tokens CSS incluidos, `skip-to-content` link, encabezado con el nombre del banco
-- [ ] T039 [P] Crear componente `frontend/src/components/ui/Button.tsx` accesible (`type` correcto, `aria-busy` en loading, focus visible AAA, area ≥44×44); test Vitest + Testing Library previo con axe
-- [ ] T040 [P] Crear `frontend/src/components/ui/TextField.tsx` accesible (label asociado, `aria-invalid`, `aria-describedby` para error); test previo con axe
-- [ ] T041 [P] Crear `frontend/src/components/ui/Checkbox.tsx` accesible (misma cobertura); test previo con axe
+- [X] T034 [P] Configurar `frontend/tailwind.config.mjs` con tokens de color AAA (research §9): `primary #8B1E2D`, `ink #0F172A`, `paper #FFFFFF`, `paper-warm #FAF7F5`, `success #0F5132`; extender `screens` para asegurar mobile-first; agregar plugin custom que aplica `focus-visible: outline 3px offset 2px`
+- [X] T035 [P] Crear `frontend/src/styles/tokens.css` con variables CSS de la paleta y un bloque `@media (prefers-reduced-motion: reduce)` que reduzca todas las transiciones a `0.01s` y elimine `transform`
+- [X] T036 [P] Configurar `frontend/astro.config.mjs` con `@astrojs/react`, `@astrojs/tailwind`, `experimental.viewTransitions: true`, `output: 'server'` (SSR necesario para leer estado del kill switch en el server)
+- [X] T037 [P] Crear `frontend/src/lib/api-client.ts` con `fetch` tipado que use `PUBLIC_API_BASE_URL`, incluya `credentials: 'include'` para endpoints admin y maneje errores estándar; test Vitest previo
+- [X] T038 [P] Crear `frontend/src/layouts/BaseLayout.astro` con `<html lang="es">`, `<meta viewport>` correcto, tokens CSS incluidos, `skip-to-content` link, encabezado con el nombre del banco
+- [X] T039 [P] Crear componente `frontend/src/components/ui/Button.tsx` accesible (`type` correcto, `aria-busy` en loading, focus visible AAA, area ≥44×44); test Vitest + Testing Library previo con axe
+- [X] T040 [P] Crear `frontend/src/components/ui/TextField.tsx` accesible (label asociado, `aria-invalid`, `aria-describedby` para error); test previo con axe
+- [X] T041 [P] Crear `frontend/src/components/ui/Checkbox.tsx` accesible (misma cobertura); test previo con axe
 
 **Checkpoint**: Fundamentos listos. Backend levanta y responde `/health`. Frontend renderiza layout vacío. Zod schemas y utilidades tienen tests verdes.
 

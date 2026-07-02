@@ -35,13 +35,15 @@ describe('Admin slots', () => {
 
   beforeAll(async () => {
     ({ app, prisma } = await createContractApp());
+    await resetDb(prisma);
+    await prisma.adminUser.deleteMany();
+    await seedAdmin(prisma);
+    // Un solo login por archivo: el throttle de login es 5/min por app.
+    cookie = await loginAndGetCookie(app);
   });
 
   beforeEach(async () => {
     await resetDb(prisma);
-    await prisma.adminUser.deleteMany();
-    await seedAdmin(prisma);
-    cookie = await loginAndGetCookie(app);
   });
 
   afterAll(async () => {

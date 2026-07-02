@@ -12,17 +12,15 @@ describe('Admin auth', () => {
   let app: INestApplication;
   let prisma: PrismaService;
 
-  beforeAll(async () => {
-    ({ app, prisma } = await createContractApp());
-  });
-
+  // App por test: estos tests hacen varios logins y el throttle es 5/min por app.
   beforeEach(async () => {
+    ({ app, prisma } = await createContractApp());
     await resetDb(prisma);
     await prisma.adminUser.deleteMany();
     await seedAdmin(prisma, { username: 'admin', password: 'secreto-de-prueba' });
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await app.close();
   });
 

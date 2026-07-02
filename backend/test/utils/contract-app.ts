@@ -13,6 +13,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import * as bcrypt from 'bcrypt';
+import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
@@ -49,6 +50,7 @@ export async function createContractApp(): Promise<{ app: INestApplication; pris
   await asegurarContenedor();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication();
+  app.use(cookieParser());
   app.setGlobalPrefix('api/v1');
   await app.init();
   const prisma = app.get(PrismaService);
@@ -57,7 +59,9 @@ export async function createContractApp(): Promise<{ app: INestApplication; pris
 
 /** Deja la BD en estado limpio: sin slots ni citas y con el kill switch apagado. */
 export async function resetDb(prisma: PrismaService): Promise<void> {
-  await prisma.$executeRawUnsafe('TRUNCATE "appointment", "slot" RESTART IDENTITY CASCADE');
+  // admin_audit_log referencia admin_user (RESTRICT): se limpia aquí para que
+  // los tests que reseedan el admin puedan borrarlo sin violar el FK.
+  await prisma.$executeRawUnsafe('TRUNCATE "appointment", "slot", "admin_audit_log" RESTART IDENTITY CASCADE');
   await prisma.systemState.update({
     where: { id: 1 },
     data: { appointmentsDisabled: false, disabledReason: null, disabledAt: null },

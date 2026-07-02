@@ -43,6 +43,44 @@ interface FilaDetalle {
   remainingCapacity: number;
 }
 
+export interface AdminAppointment {
+  id: string;
+  code: string;
+  firstName: string;
+  lastName: string;
+  idNumber: string;
+  status: string;
+  eligibilityDeclaredAt: Date;
+  cancelledAt: Date | null;
+  slot: {
+    id: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    capacity: number;
+    isDisabled: boolean;
+    isExceptionHours: boolean;
+  };
+}
+
+interface FilaAdminCita {
+  id: string;
+  code: string;
+  firstName: string;
+  lastName: string;
+  idNumber: string;
+  status: string;
+  eligibilityDeclaredAt: Date;
+  cancelledAt: Date | null;
+  slotId: string;
+  slotDate: string;
+  slotStartTime: string;
+  slotEndTime: string;
+  slotCapacity: number;
+  slotDisabled: boolean;
+  slotException: boolean;
+}
+
 interface FilaSlot {
   id: string;
   capacity: number;
@@ -246,6 +284,47 @@ export class AppointmentsRepository {
       throw new NotFoundException({ error: 'not_found', message: 'No encontramos una cita con esos datos.' });
     }
     return this.aDetalle(fila);
+  }
+
+  /** Lista citas por rango de fechas de la franja, filtro opcional por status (T126). */
+  async findByDateRange(opts: { from: string; to: string; status?: string | undefined }): Promise<AdminAppointment[]> {
+    const filas = await this.prisma.$queryRawUnsafe<FilaAdminCita[]>(
+      `SELECT a.id, a.code,
+              a.first_name AS "firstName", a.last_name AS "lastName", a.id_number AS "idNumber",
+              a.status, a.eligibility_declared_at AS "eligibilityDeclaredAt", a.cancelled_at AS "cancelledAt",
+              s.id AS "slotId",
+              to_char(s.date, 'YYYY-MM-DD')    AS "slotDate",
+              to_char(s.start_time, 'HH24:MI') AS "slotStartTime",
+              to_char(s.end_time, 'HH24:MI')   AS "slotEndTime",
+              s.capacity AS "slotCapacity", s.is_disabled AS "slotDisabled", s.is_exception_hours AS "slotException"
+         FROM appointment a
+         JOIN slot s ON s.id = a.slot_id
+        WHERE s.date BETWEEN $1::date AND $2::date
+          AND ($3::text IS NULL OR a.status = $3)
+        ORDER BY s.date ASC, s.start_time ASC, a.last_name ASC`,
+      opts.from,
+      opts.to,
+      opts.status ?? null,
+    );
+    return filas.map((f) => ({
+      id: f.id,
+      code: f.code,
+      firstName: f.firstName,
+      lastName: f.lastName,
+      idNumber: f.idNumber,
+      status: f.status,
+      eligibilityDeclaredAt: f.eligibilityDeclaredAt,
+      cancelledAt: f.cancelledAt,
+      slot: {
+        id: f.slotId,
+        date: f.slotDate,
+        startTime: f.slotStartTime,
+        endTime: f.slotEndTime,
+        capacity: f.slotCapacity,
+        isDisabled: f.slotDisabled,
+        isExceptionHours: f.slotException,
+      },
+    }));
   }
 
   private aDetalle(fila: FilaDetalle): AppointmentDetail {

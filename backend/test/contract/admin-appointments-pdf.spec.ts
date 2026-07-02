@@ -25,13 +25,14 @@ describe('Admin appointments + PDF', () => {
 
   beforeAll(async () => {
     ({ app, prisma } = await createContractApp());
-  });
-
-  beforeEach(async () => {
     await resetDb(prisma);
     await prisma.adminUser.deleteMany();
     await seedAdmin(prisma);
     cookie = await loginAndGetCookie(app);
+  });
+
+  beforeEach(async () => {
+    await resetDb(prisma);
   });
 
   afterAll(async () => {

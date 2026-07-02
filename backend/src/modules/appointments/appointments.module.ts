@@ -9,5 +9,7 @@ import { AppointmentsService } from './appointments.service';
 @Module({
   controllers: [AppointmentsController],
   providers: [AppointmentsService, AppointmentsRepository],
+  // Exportado para que los reportes admin (findByDateRange) reutilicen el repo.
+  exports: [AppointmentsRepository],
 })
 export class AppointmentsModule {}

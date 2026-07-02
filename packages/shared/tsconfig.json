@@ -1,0 +1,8 @@
+{
+  // El paquete compartido hereda el modo strict del monorepo tal cual:
+  // se consume como fuente TS (sin build) desde backend y frontend vía
+  // los paths de tsconfig.base.json y el alias de Vitest.
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

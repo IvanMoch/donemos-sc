@@ -129,6 +129,30 @@ jobs:
     name: Test frontend (Vitest + Playwright/axe)
     runs-on: ubuntu-latest
     needs: guardrails
+    # Los E2E hablan con un backend real (Principio I: solo API propia). Levantamos
+    # Postgres 16 como service para que backend pueda migrar/seedear en el mismo runner.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: donemos
+          POSTGRES_PASSWORD: donemos
+          POSTGRES_DB: donemos
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U donemos -d donemos"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: 'postgres://donemos:donemos@localhost:5432/donemos'
+      JWT_SECRET: 'ci-secret-not-for-prod'
+      REDACTION_PEPPER: 'ci-pepper-not-for-prod'
+      ADMIN_USERNAME: 'admin'
+      ADMIN_PASSWORD: 'admin1234'
+      PORT: '3001'
+      PUBLIC_API_BASE_URL: 'http://localhost:3001/api/v1'
     steps:
       - uses: actions/checkout@v4
 
@@ -148,7 +172,7 @@ jobs:
         run: pnpm --filter frontend test
 
       # Los E2E (Playwright + @axe-core/playwright) llegan con US1 (T054+).
-      # Detectamos specs para no arrancar Chromium ni el preview en vano.
+      # Detectamos specs para no arrancar Chromium ni backend en vano.
       - name: Detectar specs E2E
         id: e2e
         run: |
@@ -163,7 +187,26 @@ jobs:
         if: steps.e2e.outputs.existen == 'true'
         run: pnpm --filter frontend test:e2e:install
 
-      - name: Build + preview para E2E
+      # Backend real para que los E2E puedan agendar, cancelar, login admin, etc.
+      - name: Build backend + shared
+        if: steps.e2e.outputs.existen == 'true'
+        run: |
+          pnpm --filter @donemos/shared build
+          pnpm --filter backend build
+
+      - name: Migrar + seedear Postgres
+        if: steps.e2e.outputs.existen == 'true'
+        run: |
+          pnpm --filter backend exec prisma migrate deploy
+          pnpm --filter backend exec prisma db seed
+
+      - name: Start backend (background)
+        if: steps.e2e.outputs.existen == 'true'
+        run: |
+          (pnpm --filter backend start > backend-e2e.log 2>&1 &)
+          npx --yes wait-on http://localhost:3001/api/v1/health --timeout 60000
+
+      - name: Build + preview frontend
         if: steps.e2e.outputs.existen == 'true'
         run: |
           pnpm --filter frontend build
@@ -174,7 +217,18 @@ jobs:
         if: steps.e2e.outputs.existen == 'true'
         env:
           PLAYWRIGHT_BASE_URL: 'http://localhost:4321'
+          PLAYWRIGHT_API_BASE_URL: 'http://localhost:3001/api/v1'
+          PLAYWRIGHT_ADMIN_USERNAME: 'admin'
+          PLAYWRIGHT_ADMIN_PASSWORD: 'admin1234'
         run: pnpm --filter frontend exec playwright test
+
+      - name: Subir log del backend E2E
+        if: steps.e2e.outputs.existen == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-e2e-log
+          path: backend-e2e.log
+          retention-days: 7
 
       - name: Subir reporte Playwright
         if: steps.e2e.outputs.existen == 'true' && failure()
@@ -254,12 +308,14 @@ jobs:
           npx --yes wait-on http://localhost:4321 --timeout 60000
 
       # pa11y aplica los criterios WCAG2AAA; verifica contrastes 7:1 (SC 1.4.6).
-      # Reforzamos las mismas páginas que Lighthouse + admin/login (a11y admin).
+      # El config trae `--no-sandbox` para Chromium (Ubuntu 24.04 desactivó los
+      # user-namespaces por defecto y Puppeteer no puede lanzar sandboxed).
       - name: pa11y sobre landing, /agendar y /admin/login
         run: |
-          npx --yes pa11y --standard WCAG2AAA http://localhost:4321/
-          npx --yes pa11y --standard WCAG2AAA http://localhost:4321/agendar
-          npx --yes pa11y --standard WCAG2AAA http://localhost:4321/admin/login
+          CONFIG=".github/pa11y/pa11y.config.json"
+          npx --yes pa11y --standard WCAG2AAA --config "$CONFIG" http://localhost:4321/
+          npx --yes pa11y --standard WCAG2AAA --config "$CONFIG" http://localhost:4321/agendar
+          npx --yes pa11y --standard WCAG2AAA --config "$CONFIG" http://localhost:4321/admin/login
 
   openapi-check:
     name: OpenAPI drift check

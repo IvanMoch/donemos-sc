@@ -27,7 +27,7 @@ export function StepConfirm({ data, isSubmitting, error }: StepConfirmProps): JS
   return (
     <div className="mt-4 flex flex-col gap-4">
       <p className="text-base text-ink">
-        Revisá que tus datos estén correctos antes de confirmar la cita:
+        Revisa que tus datos estén correctos antes de confirmar la cita:
       </p>
       <dl className="rounded-md border border-neutral-200 bg-paper-warm p-4 text-base text-ink">
         <div className="flex flex-col gap-1 py-2">
@@ -49,7 +49,7 @@ export function StepConfirm({ data, isSubmitting, error }: StepConfirmProps): JS
           <dd className="text-base">
             {data.eligibilityDeclared
               ? 'Confirmada — cumplo requisitos y no aplico a criterios de exclusión.'
-              : 'Pendiente — no podés continuar sin marcarla en el paso inicial.'}
+              : 'Pendiente — no puedes continuar sin marcarla en el paso inicial.'}
           </dd>
         </div>
       </dl>

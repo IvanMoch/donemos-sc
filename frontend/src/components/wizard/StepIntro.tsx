@@ -7,6 +7,8 @@
  *
  * El componente es controlado: recibe `data` y notifica al shell con
  * `onChange` — no mantiene estado local.
+ *
+ * Localización: español de Colombia (tuteo) — ver decisión en el README/plan.
  */
 import { Checkbox } from '../ui/Checkbox';
 import type { WizardData } from './wizard-state';
@@ -28,7 +30,7 @@ export function StepIntro({ data, onChange }: StepIntroProps): JSX.Element {
     <div className="mt-4 flex flex-col gap-6">
       <div>
         <p className="text-base text-ink">
-          Antes de agendar, recordá que para donar sangre necesitás:
+          Antes de agendar, recuerda que para donar sangre necesitas:
         </p>
         <ul className="mt-3 flex flex-col gap-2">
           {RECORDATORIO.map((punto) => (
@@ -41,8 +43,11 @@ export function StepIntro({ data, onChange }: StepIntroProps): JSX.Element {
           ))}
         </ul>
         <p className="mt-3 text-sm text-ink-700">
-          Podés revisar los <strong>6 requisitos completos</strong> y los criterios de exclusión en la
-          página anterior. La verificación clínica final la hace el personal del banco.
+          Puedes revisar los <strong>6 requisitos completos</strong> y los criterios de exclusión en{' '}
+          <a href="/" className="font-medium text-primary underline">
+            la página principal
+          </a>
+          . La verificación clínica final la hace el personal del banco.
         </p>
       </div>
 
@@ -51,7 +56,7 @@ export function StepIntro({ data, onChange }: StepIntroProps): JSX.Element {
         checked={data.eligibilityDeclared}
         onChange={(e) => onChange({ eligibilityDeclared: e.currentTarget.checked })}
         label="Declaro que cumplo con los requisitos para donar sangre y no aplico a ningún criterio de exclusión listados en la página."
-        hint="Sin esta declaración no podés continuar con el agendamiento."
+        hint="Sin esta declaración no puedes continuar con el agendamiento."
       />
     </div>
   );

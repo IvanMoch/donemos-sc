@@ -24,7 +24,7 @@ const HOSPITAL = {
   mapUrl: 'https://maps.google.com/?q=Hospital+Central+San+Crist%C3%B3bal+T%C3%A1chira',
 };
 
-const formatterFecha = new Intl.DateTimeFormat('es-VE', {
+const formatterFecha = new Intl.DateTimeFormat('es-CO', {
   weekday: 'long',
   day: '2-digit',
   month: 'long',
@@ -48,7 +48,7 @@ export function SuccessScreen({ appointment, donorName }: SuccessScreenProps): J
             {donorName ? `¡Gracias, ${donorName}!` : '¡Gracias por agendar!'}
           </h1>
           <p className="text-base text-ink">
-            Presentá este código en el banco de sangre el día de tu cita.
+            Presenta este código en el banco de sangre el día de tu cita.
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export function SuccessScreen({ appointment, donorName }: SuccessScreenProps): J
         </dl>
 
         <div className="flex flex-col gap-2 border-t border-success-700/40 pt-4 text-sm text-ink">
-          <p className="font-medium">Antes de venir, recordá:</p>
+          <p className="font-medium">Antes de venir, recuerda:</p>
           <ul className="flex flex-col gap-1 pl-4">
             <li>Traer tu cédula de identidad vigente.</li>
             <li>Venir bien desayunado (no en ayunas).</li>

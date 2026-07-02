@@ -26,12 +26,12 @@ const identitySchema = z.object({
   firstName: z
     .string()
     .trim()
-    .min(1, 'Ingresá tu nombre.')
+    .min(1, 'Ingresa tu nombre.')
     .max(60, 'Máximo 60 caracteres.'),
   lastName: z
     .string()
     .trim()
-    .min(1, 'Ingresá tu apellido.')
+    .min(1, 'Ingresa tu apellido.')
     .max(60, 'Máximo 60 caracteres.'),
   idNumber: z
     .string()

@@ -34,7 +34,7 @@ const DEMO_SLOTS: readonly DemoSlot[] = [
   { id: 'demo-3', date: '2026-07-07', startTime: '09:00', endTime: '09:35', remainingCapacity: 1 },
 ];
 
-const formatterFecha = new Intl.DateTimeFormat('es-VE', {
+const formatterFecha = new Intl.DateTimeFormat('es-CO', {
   weekday: 'long',
   day: '2-digit',
   month: 'long',
@@ -50,7 +50,7 @@ export function StepSlot({ data, onChange }: StepSlotProps): JSX.Element {
         className="rounded-md border border-primary-100 bg-primary-50 p-3 text-sm text-primary-900"
       >
         <strong>Nota de desarrollo:</strong> el listado real de horarios llegará cuando el backend
-        exponga <code>/api/v1/slots</code>. Por ahora podés seleccionar uno de estos slots de
+        exponga <code>/api/v1/slots</code>. Por ahora puedes seleccionar uno de estos slots de
         ejemplo para navegar el resto del flujo.
       </div>
 

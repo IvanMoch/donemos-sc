@@ -6,8 +6,14 @@
  */
 import { z } from 'zod';
 
-/** Hora local en formato HH:MM de 24h (America/Caracas la resuelve el frontend). */
-export const timeOfDaySchema = z.string().regex(/^\d{2}:\d{2}$/, 'Hora inválida (HH:MM).');
+/**
+ * Hora local en formato HH:MM de 24h (America/Caracas la resuelve el frontend).
+ * Restringe a 00–23 horas y 00–59 minutos para rechazar valores imposibles
+ * (p. ej. "99:99") antes de que lleguen a la lógica de dominio o a la BD.
+ */
+export const timeOfDaySchema = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Hora inválida (HH:MM, entre 00:00 y 23:59).');
 
 export const publicSlotSchema = z.object({
   id: z.string().uuid(),

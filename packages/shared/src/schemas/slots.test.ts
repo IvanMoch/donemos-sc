@@ -26,6 +26,12 @@ describe('publicSlotSchema', () => {
     expect(() => publicSlotSchema.parse({ ...SLOT, startTime: '7:00' })).toThrow();
   });
 
+  it('rechaza horas con dígitos válidos pero valores imposibles', () => {
+    expect(() => publicSlotSchema.parse({ ...SLOT, startTime: '99:99' })).toThrow();
+    expect(() => publicSlotSchema.parse({ ...SLOT, endTime: '24:00' })).toThrow();
+    expect(() => publicSlotSchema.parse({ ...SLOT, startTime: '07:60' })).toThrow();
+  });
+
   it('rechaza fecha con formato inválido', () => {
     expect(() => publicSlotSchema.parse({ ...SLOT, date: '02-07-2026' })).toThrow();
   });

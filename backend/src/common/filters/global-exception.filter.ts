@@ -44,8 +44,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     const { status, body } = this.normalizar(exception);
 
+    // Se loguea la ruta PLANTILLA (p. ej. /api/v1/appointments/:code/cancel),
+    // nunca req.url: la URL real lleva el código de cita, que es secreto de
+    // autorización (FR-016) y no debe aparecer en logs.
+    const ruta = req.route?.path ? `${req.baseUrl ?? ''}${req.route.path}` : 'unmatched';
+
     logger.error({
-      route: req.url,
+      route: ruta,
       method: req.method,
       status,
       error: body.error,

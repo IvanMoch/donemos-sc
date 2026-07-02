@@ -25,17 +25,30 @@ export class LoggingInterceptor implements NestInterceptor {
     req.requestId = requestId;
 
     const inicio = Date.now();
+    const res = context.switchToHttp().getResponse<Response>();
+
+    let emitido = false;
     const emitir = (): void => {
-      const res = context.switchToHttp().getResponse<Response>();
+      if (emitido) return;
+      emitido = true;
       logger.info({
         request_id: requestId,
-        route: req.route?.path ?? req.url,
+        // Ruta plantilla, nunca la URL real (no filtra el código de cita).
+        route: req.route?.path ?? 'unmatched',
         method: req.method,
         status: res.statusCode,
         duration_ms: Date.now() - inicio,
       });
     };
 
+    // Preferimos res.on('finish'|'close'): el status ya está finalizado incluso
+    // en el camino de error (el filtro global ya escribió la respuesta). En
+    // contextos de test que mockean el response sin .on(), caemos a tap().
+    if (typeof res.on === 'function') {
+      res.on('finish', emitir);
+      res.on('close', emitir);
+      return next.handle();
+    }
     return next.handle().pipe(tap({ next: emitir, error: emitir }));
   }
 }

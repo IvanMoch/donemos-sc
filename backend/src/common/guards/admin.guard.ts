@@ -3,7 +3,8 @@
  *
  * Valida la cookie `session` (JWT HS256, research §6). Si es válida, adjunta
  * `adminUser` al request para que los controladores registren la autoría en el
- * audit log; si falta o es inválida, responde 401 sin detalles.
+ * audit log; si falta o es inválida, responde SIEMPRE el mismo 401 genérico
+ * (no distingue "falta" de "inválida" para no dar pistas a un atacante).
  */
 import {
   Injectable,
@@ -24,6 +25,9 @@ export interface AdminUserContext {
   username: string;
 }
 
+/** Payload 401 único: mismo mensaje para "sin cookie" y "cookie inválida". */
+const RESPUESTA_NO_AUTORIZADO = { error: 'unauthorized', message: 'No autorizado.' };
+
 @Injectable()
 export class AdminGuard implements CanActivate {
   constructor(private readonly jwt: JwtService) {}
@@ -35,7 +39,7 @@ export class AdminGuard implements CanActivate {
     const token = req.cookies?.session;
 
     if (!token) {
-      throw new UnauthorizedException({ error: 'unauthorized', message: 'Sesión requerida.' });
+      throw new UnauthorizedException(RESPUESTA_NO_AUTORIZADO);
     }
 
     try {
@@ -43,7 +47,7 @@ export class AdminGuard implements CanActivate {
       req.adminUser = { id: payload.sub, username: payload.username };
       return true;
     } catch {
-      throw new UnauthorizedException({ error: 'unauthorized', message: 'Sesión inválida o expirada.' });
+      throw new UnauthorizedException(RESPUESTA_NO_AUTORIZADO);
     }
   }
 }

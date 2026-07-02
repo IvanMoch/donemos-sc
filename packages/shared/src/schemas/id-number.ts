@@ -9,7 +9,9 @@ import { z } from 'zod';
 
 export const idNumberSchema = z
   .string()
-  .transform((v) => v.toUpperCase().replace(/-/g, ''))
+  // trim() incluido para no divergir del normalizador imperativo del backend
+  // (normalizeIdNumber): ambos deben producir el mismo valor canónico.
+  .transform((v) => v.trim().toUpperCase().replace(/-/g, ''))
   .pipe(z.string().regex(/^[VE][0-9]{6,8}$/, 'Cédula inválida: usa V o E seguido de 6 a 8 dígitos.'));
 
 export type IdNumber = z.infer<typeof idNumberSchema>;

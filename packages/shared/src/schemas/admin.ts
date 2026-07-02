@@ -56,11 +56,20 @@ export const createSlotSchema = z
         message: 'Fuera de L–V. Marca isExceptionHours para confirmar la excepción.',
       });
     }
-    if (val.startTime < BUSINESS_HOURS_START || val.endTime > BUSINESS_HOURS_END) {
+    // Se reporta cada extremo en su propio path para que el cliente resalte el
+    // campo correcto (no siempre startTime).
+    if (val.startTime < BUSINESS_HOURS_START) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['startTime'],
-        message: 'Fuera de 7:00–12:00. Marca isExceptionHours para confirmar la excepción.',
+        message: 'Antes de las 7:00. Marca isExceptionHours para confirmar la excepción.',
+      });
+    }
+    if (val.endTime > BUSINESS_HOURS_END) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endTime'],
+        message: 'Después de las 12:00. Marca isExceptionHours para confirmar la excepción.',
       });
     }
   });

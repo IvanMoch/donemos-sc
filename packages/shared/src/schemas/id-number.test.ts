@@ -14,6 +14,10 @@ describe('idNumberSchema', () => {
     expect(idNumberSchema.parse('E1234567')).toBe('E1234567');
   });
 
+  it('recorta espacios en los extremos antes de validar (consistencia con el backend)', () => {
+    expect(idNumberSchema.parse('  v-12345678  ')).toBe('V12345678');
+  });
+
   it('normaliza a mayúsculas y elimina guiones antes de validar', () => {
     expect(idNumberSchema.parse('v-12.345.678'.replace(/\./g, ''))).toBe('V12345678');
     expect(idNumberSchema.parse('v12345678')).toBe('V12345678');

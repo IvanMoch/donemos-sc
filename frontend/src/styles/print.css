@@ -1,0 +1,67 @@
+/*
+ * Estilos de impresión para el comprobante de cita (T082).
+ *
+ * Objetivo: cuando el donante pulse "Descargar comprobante" (que dispara
+ * window.print()), el navegador debe imprimir SOLO el bloque de la cita
+ * confirmada, sin la cabecera del sitio, el footer, ni ningún control.
+ *
+ * Enfoque: escondemos todo el layout base y dejamos visible únicamente
+ * los elementos marcados con la clase `print-block` (aplicada en el card
+ * verde de SuccessScreen).
+ *
+ * Formato: A4 con márgenes razonables para el hospital. Tipografía con
+ * contraste alto (ink sobre paper) para que la copia impresa sea legible.
+ */
+
+@media print {
+  /* Reset de fondos y sombras para no gastar toner. */
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+    text-shadow: none !important;
+  }
+
+  /* Ocultar todo lo que no sea comprobante. */
+  header,
+  footer,
+  nav,
+  aside,
+  [role='navigation'],
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Asegurar que el layout principal no aplique padding vertical grande. */
+  body,
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  main {
+    max-width: none !important;
+  }
+
+  /* Bloque del comprobante en tamaño legible sobre A4. */
+  .print-block {
+    padding: 1.5rem !important;
+    border: 2px solid #0f172a !important;
+    border-radius: 0 !important;
+    page-break-inside: avoid;
+  }
+
+  /* Enfatizar el código de la cita — es lo primero que el personal del
+     banco busca al recibir el comprobante impreso. */
+  .print-block .font-mono {
+    font-size: 2.5rem !important;
+    letter-spacing: 0.35rem !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+}

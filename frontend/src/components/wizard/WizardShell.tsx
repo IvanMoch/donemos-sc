@@ -136,14 +136,28 @@ export function WizardShell(_props: WizardShellProps): JSX.Element {
       </div>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-        <Button
-          type="button"
-          onClick={handleBack}
-          disabled={currentIndex === 0 || state.status === 'submitting'}
-          className="bg-paper-warm text-ink hover:bg-neutral-200 sm:min-w-[8rem]"
-        >
-          Volver
-        </Button>
+        {currentIndex === 0 ? (
+          // En el paso inicial no hay paso anterior en el wizard, pero el
+          // usuario espera que "Volver" lo saque a la landing. Renderizamos
+          // un <a> semántico (con look-and-feel de botón) en vez de un
+          // <button> deshabilitado — mejor UX y no rompe navegación por teclado.
+          <a
+            href="/"
+            className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-md bg-paper-warm px-6 py-2 text-base font-medium text-ink transition-colors duration-[220ms] ease-in-out hover:bg-neutral-200 sm:min-w-[8rem]"
+            aria-disabled={state.status === 'submitting' ? 'true' : undefined}
+          >
+            Volver a la pagina principal
+          </a>
+        ) : (
+          <Button
+            type="button"
+            onClick={handleBack}
+            disabled={state.status === 'submitting'}
+            className="bg-paper-warm text-ink hover:bg-neutral-200 sm:min-w-[8rem]"
+          >
+            Volver
+          </Button>
+        )}
         {currentStep.id === 'confirm' ? (
           <Button
             type="button"

@@ -59,30 +59,30 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 ### Shared package (packages/shared)
 
-- [ ] T016 [P] Escribir esquemas Zod compartidos en `packages/shared/src/schemas/id-number.ts` (normalización + regex `^[VE][0-9]{6,8}$`), `packages/shared/src/schemas/appointment-code.ts` (alfabeto Nano ID 10 chars) — con tests Vitest en `packages/shared/src/schemas/id-number.test.ts` y `appointment-code.test.ts` que fallen antes de escribir el schema
-- [ ] T017 [P] Escribir esquemas Zod para creación y consulta en `packages/shared/src/schemas/appointments.ts` (`createAppointmentSchema`, `lookupSchema`, `cancelSchema`, `rescheduleSchema`) — precedidos por tests que verifiquen que `eligibilityDeclared: false` falla
-- [ ] T018 [P] Escribir esquemas Zod para slots y system status en `packages/shared/src/schemas/slots.ts` y `packages/shared/src/schemas/system.ts` — con tests
-- [ ] T019 [P] Escribir esquemas Zod admin (`loginSchema`, `createSlotSchema` con `isExceptionHours`, `updateSlotSchema`, `disableSlotSchema`, `toggleKillSwitchSchema`) en `packages/shared/src/schemas/admin.ts` con tests que verifiquen rechazo de fecha fuera de L–V 7–12 sin `isExceptionHours=true`
-- [ ] T020 Exportar todo desde `packages/shared/src/index.ts` (barrel) y publicar tipos derivados con `z.infer`
+- [X] T016 [P] Escribir esquemas Zod compartidos en `packages/shared/src/schemas/id-number.ts` (normalización + regex `^[VE][0-9]{6,8}$`), `packages/shared/src/schemas/appointment-code.ts` (alfabeto Nano ID 10 chars) — con tests Vitest en `packages/shared/src/schemas/id-number.test.ts` y `appointment-code.test.ts` que fallen antes de escribir el schema
+- [X] T017 [P] Escribir esquemas Zod para creación y consulta en `packages/shared/src/schemas/appointments.ts` (`createAppointmentSchema`, `lookupSchema`, `cancelSchema`, `rescheduleSchema`) — precedidos por tests que verifiquen que `eligibilityDeclared: false` falla
+- [X] T018 [P] Escribir esquemas Zod para slots y system status en `packages/shared/src/schemas/slots.ts` y `packages/shared/src/schemas/system.ts` — con tests
+- [X] T019 [P] Escribir esquemas Zod admin (`loginSchema`, `createSlotSchema` con `isExceptionHours`, `updateSlotSchema`, `disableSlotSchema`, `toggleKillSwitchSchema`) en `packages/shared/src/schemas/admin.ts` con tests que verifiquen rechazo de fecha fuera de L–V 7–12 sin `isExceptionHours=true`
+- [X] T020 Exportar todo desde `packages/shared/src/index.ts` (barrel) y publicar tipos derivados con `z.infer`
 
 ### Prisma schema y migraciones
 
-- [ ] T021 Añadir modelos Prisma en `backend/prisma/schema.prisma`: `AdminUser`, `Slot`, `Appointment`, `SystemState`, `AdminAuditLog` conforme a `data-model.md` (con `@db.` explícitos, checks vía `@db.Check`, índice parcial `UNIQUE (id_number) WHERE status = 'active'`)
-- [ ] T022 Generar y aplicar migración inicial: `pnpm --filter backend prisma migrate dev --name init` — archivo resultante bajo `backend/prisma/migrations/*_init/migration.sql`
-- [ ] T023 [P] Añadir seed en `backend/prisma/seed.ts` que cree el registro `system_state` singleton (id=1) y el `admin_user` inicial (`ADMIN_USERNAME`/`ADMIN_PASSWORD` desde env, bcrypt cost 12); registrar el comando en `package.json` (`prisma.seed`)
-- [ ] T024 [P] Test de integración de migraciones en `backend/test/integration/schema.spec.ts` que verifique: presencia de índice parcial único, singleton `system_state`, constraints CHECK del `id_number`
+- [X] T021 Añadir modelos Prisma en `backend/prisma/schema.prisma`: `AdminUser`, `Slot`, `Appointment`, `SystemState`, `AdminAuditLog` conforme a `data-model.md` (con `@db.` explícitos, checks vía `@db.Check`, índice parcial `UNIQUE (id_number) WHERE status = 'active'`)
+- [X] T022 Generar y aplicar migración inicial: `pnpm --filter backend prisma migrate dev --name init` — archivo resultante bajo `backend/prisma/migrations/*_init/migration.sql`
+- [X] T023 [P] Añadir seed en `backend/prisma/seed.ts` que cree el registro `system_state` singleton (id=1) y el `admin_user` inicial (`ADMIN_USERNAME`/`ADMIN_PASSWORD` desde env, bcrypt cost 12); registrar el comando en `package.json` (`prisma.seed`)
+- [X] T024 [P] Test de integración de migraciones en `backend/test/integration/schema.spec.ts` que verifique: presencia de índice parcial único, singleton `system_state`, constraints CHECK del `id_number`
 
 ### Backend common infra
 
-- [ ] T025 [P] Crear `backend/src/common/pipes/zod-validation.pipe.ts` que consuma esquemas Zod compartidos y devuelva `400` con `error: 'validation_failed', issues: [...]`; test unitario en el mismo directorio (`*.spec.ts`) previo
-- [ ] T026 [P] Crear `backend/src/common/filters/global-exception.filter.ts` que enmascare PII en logs (nombre/apellido/cédula → `***`) y devuelva el shape estándar `{ error, message, code? }`; test unitario previo
-- [ ] T027 [P] Crear `backend/src/common/interceptors/logging.interceptor.ts` con `pino` estructurado (`request_id`, `route`, `status`, `duration_ms`); test previo
-- [ ] T028 [P] Crear `backend/src/modules/system-state/system-state.service.ts` con lectura cacheada 5s del kill switch (research §5); test unitario previo
-- [ ] T029 [P] Crear `backend/src/common/guards/kill-switch.guard.ts` que consulte `SystemStateService` y responda 503 en endpoints marcados con `@ProtectedByKillSwitch()`; test unitario previo
-- [ ] T030 [P] Crear `backend/src/common/guards/admin.guard.ts` que valide cookie `session` con JWT (`@nestjs/jwt`) y adjunte `admin_user` al request; test unitario previo
-- [ ] T031 [P] Crear `backend/src/common/utils/appointment-code.ts` generador Nano ID 10 chars alfabeto sin ambigüedades (research §14); test unitario previo verificando alfabeto y longitud
-- [ ] T032 [P] Crear `backend/src/common/utils/id-number.ts` normalizador (uppercase, sin guion); test unitario previo
-- [ ] T033 Wire completo en `backend/src/main.ts`: bootstrap NestJS, `helmet`, `cookie-parser`, `@nestjs/throttler` con dos buckets (público 30/min; lookup 10/min — research §10), `pino` como logger global, `ZodValidationPipe` global, `GlobalExceptionFilter` global, `LoggingInterceptor` global, listen en `PORT`
+- [X] T025 [P] Crear `backend/src/common/pipes/zod-validation.pipe.ts` que consuma esquemas Zod compartidos y devuelva `400` con `error: 'validation_failed', issues: [...]`; test unitario en el mismo directorio (`*.spec.ts`) previo
+- [X] T026 [P] Crear `backend/src/common/filters/global-exception.filter.ts` que enmascare PII en logs (nombre/apellido/cédula → `***`) y devuelva el shape estándar `{ error, message, code? }`; test unitario previo
+- [X] T027 [P] Crear `backend/src/common/interceptors/logging.interceptor.ts` con `pino` estructurado (`request_id`, `route`, `status`, `duration_ms`); test previo
+- [X] T028 [P] Crear `backend/src/modules/system-state/system-state.service.ts` con lectura cacheada 5s del kill switch (research §5); test unitario previo
+- [X] T029 [P] Crear `backend/src/common/guards/kill-switch.guard.ts` que consulte `SystemStateService` y responda 503 en endpoints marcados con `@ProtectedByKillSwitch()`; test unitario previo
+- [X] T030 [P] Crear `backend/src/common/guards/admin.guard.ts` que valide cookie `session` con JWT (`@nestjs/jwt`) y adjunte `admin_user` al request; test unitario previo
+- [X] T031 [P] Crear `backend/src/common/utils/appointment-code.ts` generador Nano ID 10 chars alfabeto sin ambigüedades (research §14); test unitario previo verificando alfabeto y longitud
+- [X] T032 [P] Crear `backend/src/common/utils/id-number.ts` normalizador (uppercase, sin guion); test unitario previo
+- [X] T033 Wire completo en `backend/src/main.ts`: bootstrap NestJS, `helmet`, `cookie-parser`, `@nestjs/throttler` con dos buckets (público 30/min; lookup 10/min — research §10), `pino` como logger global, `ZodValidationPipe` global, `GlobalExceptionFilter` global, `LoggingInterceptor` global, listen en `PORT`
 
 ### Frontend foundational
 

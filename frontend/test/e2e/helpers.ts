@@ -39,36 +39,64 @@ export interface AdminAuth {
   api: APIRequestContext;
 }
 
-/** Login admin y devuelve un contexto API con cookie de sesión pegada. */
+/**
+ * Login admin con backoff exponencial ante 429.
+ *
+ * El backend limita login a 5/min (research §10 anti-fuerza-bruta). Cuando
+ * Playwright corre varios test files en paralelo, cada uno hace su propio
+ * beforeAll → varios logins concurrentes que saturan el bucket. En vez de
+ * relajar la protección del backend, esperamos con backoff hasta que el
+ * bucket se libere.
+ */
 export async function loginAdmin(): Promise<AdminAuth> {
   const api = await createApiContext();
-  const res = await api.post(apiUrl('/admin/auth/login'), {
-    data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
-  });
-  if (res.status() !== 204) {
-    throw new Error(`Login admin falló con status ${res.status()}: ${await res.text()}`);
+  const delays = [2_000, 5_000, 10_000, 15_000, 20_000];
+  let lastText = '';
+  for (let intento = 0; intento <= delays.length; intento++) {
+    const res = await api.post(apiUrl('/admin/auth/login'), {
+      data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
+    });
+    if (res.status() === 204) return { api };
+    lastText = await res.text();
+    if (res.status() !== 429 || intento === delays.length) {
+      throw new Error(`Login admin falló con status ${res.status()}: ${lastText}`);
+    }
+    await new Promise((r) => setTimeout(r, delays[intento] ?? 2_000));
   }
-  return { api };
+  throw new Error(`Login admin falló tras reintentos: ${lastText}`);
 }
 
-/** Asegura que exista al menos un slot con cupo mañana. */
+/**
+ * Asegura que exista un slot con cupo mañana y lo devuelve.
+ * Idempotente: si ya existe (409 duplicate_slot por otro test paralelo),
+ * lo busca en /admin/slots y devuelve el existente. Los tests que corren
+ * en paralelo terminan compartiendo el mismo slot sin conflictos.
+ */
 export async function ensureAvailableSlot(auth: AdminAuth): Promise<CreatedSlot> {
   const manana = new Date();
   manana.setDate(manana.getDate() + 1);
   const fecha = manana.toISOString().slice(0, 10);
-  const res = await auth.api.post(apiUrl('/admin/slots'), {
-    data: {
-      date: fecha,
-      startTime: '07:00',
-      endTime: '07:35',
-      capacity: 5,
-      isExceptionHours: isFinDeSemana(manana),
-    },
-  });
-  if (res.status() >= 400) {
-    throw new Error(`No se pudo crear slot para ${fecha}: ${await res.text()}`);
+  const payload = {
+    date: fecha,
+    startTime: '07:00',
+    endTime: '07:35',
+    capacity: 5,
+    isExceptionHours: isFinDeSemana(manana),
+  };
+  const res = await auth.api.post(apiUrl('/admin/slots'), { data: payload });
+  if (res.status() === 201 || res.status() === 200) {
+    return (await res.json()) as CreatedSlot;
   }
-  return (await res.json()) as CreatedSlot;
+  if (res.status() === 409) {
+    // Ya existe por otro test paralelo — devolvemos el existente.
+    const list = await auth.api.get(apiUrl(`/admin/slots?from=${fecha}&to=${fecha}`));
+    if (list.ok()) {
+      const rows = (await list.json()) as Array<CreatedSlot & { startTime: string }>;
+      const found = rows.find((s) => s.date === fecha && s.startTime === '07:00');
+      if (found) return found;
+    }
+  }
+  throw new Error(`No se pudo asegurar slot para ${fecha}: ${await res.text()}`);
 }
 
 function isFinDeSemana(d: Date): boolean {

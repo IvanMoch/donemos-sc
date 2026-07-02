@@ -113,6 +113,7 @@ export function WizardShell(_props: WizardShellProps): JSX.Element {
 
       <div
         role="progressbar"
+        aria-label="Progreso del agendamiento"
         aria-valuenow={stepNumber}
         aria-valuemin={1}
         aria-valuemax={totalSteps}

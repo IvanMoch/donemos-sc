@@ -45,30 +45,62 @@ export interface AdminAuth {
 }
 
 /**
- * Login admin con backoff exponencial ante 429.
- *
- * El backend limita login a 5/min (research §10 anti-fuerza-bruta). Cuando
- * Playwright corre varios test files en paralelo, cada uno hace su propio
- * beforeAll → varios logins concurrentes que saturan el bucket. En vez de
- * relajar la protección del backend, esperamos con backoff hasta que el
- * bucket se libere.
+ * Cache de sesión admin a nivel de módulo: dentro del mismo worker de
+ * Playwright, `loginAdmin` reutiliza la cookie ya obtenida y evita repetir
+ * el POST /admin/auth/login. El backend limita login a 5/min (research §10)
+ * y con `fullyParallel` una carrera entre tests saturaría el bucket.
+ * En un worker se comparte el módulo: cachear aquí es suficiente.
  */
-export async function loginAdmin(): Promise<AdminAuth> {
+let cachedSessionCookie: string | null = null;
+let cachedLoginPromise: Promise<string> | null = null;
+
+async function fetchSessionCookie(): Promise<string> {
   const api = await createApiContext();
   const delays = [2_000, 5_000, 10_000, 15_000, 20_000];
   let lastText = '';
-  for (let intento = 0; intento <= delays.length; intento++) {
-    const res = await api.post(apiUrl('/admin/auth/login'), {
-      data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
-    });
-    if (res.status() === 204) return { api };
-    lastText = await res.text();
-    if (res.status() !== 429 || intento === delays.length) {
-      throw new Error(`Login admin falló con status ${res.status()}: ${lastText}`);
+  try {
+    for (let intento = 0; intento <= delays.length; intento++) {
+      const res = await api.post(apiUrl('/admin/auth/login'), {
+        data: { username: ADMIN_USERNAME, password: ADMIN_PASSWORD },
+      });
+      if (res.status() === 204) {
+        const state = await api.storageState();
+        const cookie = state.cookies.find((c) => c.name === 'session');
+        if (!cookie) {
+          throw new Error('Login OK pero no llegó cookie `session` en el response.');
+        }
+        return cookie.value;
+      }
+      lastText = await res.text();
+      if (res.status() !== 429 || intento === delays.length) {
+        throw new Error(`Login admin falló con status ${res.status()}: ${lastText}`);
+      }
+      await new Promise((r) => setTimeout(r, delays[intento] ?? 2_000));
     }
-    await new Promise((r) => setTimeout(r, delays[intento] ?? 2_000));
+    throw new Error(`Login admin falló tras reintentos: ${lastText}`);
+  } finally {
+    await api.dispose();
   }
-  throw new Error(`Login admin falló tras reintentos: ${lastText}`);
+}
+
+/**
+ * Login admin con cache por worker + backoff exponencial ante 429.
+ *
+ * El primer llamado dentro de un worker hace el POST real; los siguientes
+ * reutilizan la cookie. Devuelve un `AdminAuth` con un APIRequestContext
+ * fresco que ya trae la cookie `session` inyectada.
+ */
+export async function loginAdmin(): Promise<AdminAuth> {
+  if (!cachedSessionCookie) {
+    if (!cachedLoginPromise) {
+      cachedLoginPromise = fetchSessionCookie();
+    }
+    cachedSessionCookie = await cachedLoginPromise;
+  }
+  const api = await playwrightRequest.newContext({
+    extraHTTPHeaders: { cookie: `session=${cachedSessionCookie}` },
+  });
+  return { api };
 }
 
 /**
@@ -194,24 +226,23 @@ export async function expectFocusedHeading(page: Page, text: string | RegExp): P
  * a rutas protegidas — evita interactuar con /admin/login y el throttle.
  */
 export async function authenticateAdmin(browserContext: BrowserContext): Promise<void> {
-  const auth = await loginAdmin();
-  const cookies = await auth.api.storageState();
-  const sessionCookie = cookies.cookies.find((c) => c.name === 'session');
-  if (!sessionCookie) {
-    throw new Error('loginAdmin no devolvió cookie `session` para reutilizar.');
+  // Asegurar que hay una cookie cacheada (login real la primera vez, cache en las siguientes).
+  await loginAdmin();
+  if (!cachedSessionCookie) {
+    throw new Error('authenticateAdmin: no se pudo obtener cookie `session` cacheada.');
   }
   // Fijar la cookie sobre localhost sin puerto para que viaje tanto a
   // localhost:4321 (frontend SSR) como a localhost:3001 (backend directo).
   await browserContext.addCookies([
     {
       name: 'session',
-      value: sessionCookie.value,
+      value: cachedSessionCookie,
       domain: 'localhost',
       path: '/',
       httpOnly: true,
-      secure: sessionCookie.secure,
-      sameSite: sessionCookie.sameSite,
-      expires: sessionCookie.expires,
+      // JWT expira en 8h; para tests un TTL corto es suficiente. -1 = sesión.
+      secure: false,
+      sameSite: 'Lax',
     },
   ]);
 }

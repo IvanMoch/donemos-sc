@@ -16,14 +16,20 @@ interface StepConfirmProps {
   error: string | null;
 }
 
-const DEMO_SLOT_LABELS: Record<string, string> = {
-  'demo-1': 'Lunes 06 de julio · 07:00 – 07:35',
-  'demo-2': 'Lunes 06 de julio · 07:40 – 08:15',
-  'demo-3': 'Martes 07 de julio · 09:00 – 09:35',
-};
+const formatterFecha = new Intl.DateTimeFormat('es-CO', {
+  weekday: 'long',
+  day: '2-digit',
+  month: 'long',
+});
+
+function labelSlot(data: WizardData): string {
+  if (!data.slotDate || !data.slotStart || !data.slotEnd) return '—';
+  const fecha = new Date(`${data.slotDate}T${data.slotStart}:00`);
+  return `${formatterFecha.format(fecha)} · ${data.slotStart} – ${data.slotEnd}`;
+}
 
 export function StepConfirm({ data, isSubmitting, error }: StepConfirmProps): JSX.Element {
-  const slotLabel = data.slotId ? (DEMO_SLOT_LABELS[data.slotId] ?? data.slotId) : '—';
+  const slotLabel = labelSlot(data);
   return (
     <div className="mt-4 flex flex-col gap-4">
       <p className="text-base text-ink">
@@ -32,7 +38,7 @@ export function StepConfirm({ data, isSubmitting, error }: StepConfirmProps): JS
       <dl className="rounded-md border border-neutral-200 bg-paper-warm p-4 text-base text-ink">
         <div className="flex flex-col gap-1 py-2">
           <dt className="text-sm font-medium text-ink-700">Horario</dt>
-          <dd className="text-base">{slotLabel}</dd>
+          <dd className="text-base capitalize">{slotLabel}</dd>
         </div>
         <div className="flex flex-col gap-1 border-t border-neutral-200 py-2">
           <dt className="text-sm font-medium text-ink-700">Nombre completo</dt>

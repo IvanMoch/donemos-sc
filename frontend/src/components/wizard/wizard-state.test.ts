@@ -19,6 +19,9 @@ import {
 const emptyData: WizardData = {
   eligibilityDeclared: false,
   slotId: null,
+  slotDate: null,
+  slotStart: null,
+  slotEnd: null,
   firstName: '',
   lastName: '',
   idNumber: '',

@@ -4,25 +4,25 @@
 // Esta página NO está prerenderizada: se sirve SSR para poder consultar el
 // estado del kill switch en el servidor antes de renderizar (research §5).
 // Si `appointmentsDisabled=true`, redirigimos a /kill-switch-activo (SC-005).
-//
-// TODO(US1 backend): implementar la consulta a /api/v1/system/status.
-// Mientras Fase 2 backend no exista, servimos siempre el wizard (no hay
-// endpoint que devuelva el kill switch todavía). El apiClient (T037) ya
-// tiene el helper listo — solo faltará el fetch server-side aquí.
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { WizardShell } from '../../components/wizard/WizardShell';
+import { publicApi } from '../../lib/api';
 import '../../styles/wizard.css';
 import '../../styles/print.css';
 
-// TODO(US1 backend): server-side fetch a /api/v1/system/status.
-// Ejemplo del código final:
-//
-//   import { apiClient } from '../../lib/api-client';
-//   const status = await apiClient<{ appointmentsDisabled: boolean }>('/system/status');
-//   if (status?.appointmentsDisabled) {
-//     return Astro.redirect('/kill-switch-activo');
-//   }
+// SSR: si el kill switch está activo, redirigimos antes de renderizar.
+// Fallo tolerante: si el backend no responde, dejamos pasar (mostrar wizard)
+// para no bloquear al usuario por un incidente transitorio; el POST /appointments
+// devolverá 503 apenas intente confirmar y el UI lo maneja.
+try {
+  const status = await publicApi.getSystemStatus();
+  if (status?.appointmentsDisabled) {
+    return Astro.redirect('/kill-switch-activo');
+  }
+} catch (_err) {
+  // Silencioso a propósito — ver comentario arriba.
+}
 ---
 
 <BaseLayout

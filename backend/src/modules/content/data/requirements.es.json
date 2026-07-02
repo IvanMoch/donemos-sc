@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Cédula de identidad vigente",
+    "description": "Obligatoria; debe presentarse el día de la cita."
+  },
+  {
+    "title": "Edad",
+    "description": "Entre 18 y 60 años."
+  },
+  {
+    "title": "Peso",
+    "description": "Mínimo 50 kg."
+  },
+  {
+    "title": "Salud general",
+    "description": "Sentirse bien, sin gripe ni fiebre."
+  },
+  {
+    "title": "Alimentación",
+    "description": "Venir bien desayunado. No presentarse en ayunas."
+  },
+  {
+    "title": "Descanso",
+    "description": "Haber dormido bien la noche anterior."
+  }
+]

@@ -15,7 +15,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "openapi:generate": "ts-node -P tsconfig.json src/scripts/generate-openapi.ts",
+    "openapi:check": "ts-node -P tsconfig.json src/scripts/generate-openapi.ts --check"
   },
   "prisma": {
     "seed": "ts-node -P tsconfig.json prisma/seed.ts"
@@ -60,6 +62,7 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "yaml": "^2.6.1"
   }
 }

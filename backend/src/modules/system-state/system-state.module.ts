@@ -6,10 +6,12 @@
  * compartido. El controlador público se registra en su tarea de US1.
  */
 import { Global, Module } from '@nestjs/common';
+import { SystemStateController } from './system-state.controller';
 import { SystemStateService } from './system-state.service';
 
 @Global()
 @Module({
+  controllers: [SystemStateController],
   providers: [SystemStateService],
   exports: [SystemStateService],
 })

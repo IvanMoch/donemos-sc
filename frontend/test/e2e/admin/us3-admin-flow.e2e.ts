@@ -46,10 +46,13 @@ test.describe('US3 — flujo administrativo completo', () => {
     const dow = pasado.getDay();
     const excep = dow === 0 || dow === 6;
 
-    await page.getByLabel(/^fecha$/i).fill(fecha);
-    await page.getByLabel(/^inicio$/i).fill('09:00');
-    await page.getByLabel(/^fin$/i).fill('09:35');
-    await page.getByLabel(/capacidad/i).fill('5');
+    // Los labels de TextField cuando `required` añaden un asterisco visual
+    // vía aria-hidden — el nombre accesible en el árbol es "Fecha*". Por eso
+    // el regex acepta el asterisco opcional al final.
+    await page.getByLabel(/^fecha\*?$/i).fill(fecha);
+    await page.getByLabel(/^inicio\*?$/i).fill('09:00');
+    await page.getByLabel(/^fin\*?$/i).fill('09:35');
+    await page.getByLabel(/^capacidad\*?$/i).fill('5');
     if (excep) {
       await page.getByRole('checkbox', { name: /fuera de l–v 7–12/i }).check();
     }

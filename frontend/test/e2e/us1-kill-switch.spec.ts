@@ -18,7 +18,9 @@ test.describe('US1 — kill switch redirect', () => {
     try {
       await page.goto('/agendar');
       await expect(page).toHaveURL(/kill-switch-activo/);
-      await expect(page.getByRole('heading', { name: /agendamiento temporalmente/i })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /agendamiento está pausado/i }),
+      ).toBeVisible();
     } finally {
       await setKillSwitch(auth, false);
     }

@@ -14,9 +14,11 @@ import { Test } from '@nestjs/testing';
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import * as bcrypt from 'bcrypt';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
+import { helmetOptions } from '../../src/common/security/helmet-options';
 
 const RAIZ_BACKEND = join(__dirname, '..', '..');
 
@@ -50,6 +52,7 @@ export async function createContractApp(): Promise<{ app: INestApplication; pris
   await asegurarContenedor();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = moduleRef.createNestApplication();
+  app.use(helmet(helmetOptions()));
   app.use(cookieParser());
   app.setGlobalPrefix('api/v1');
   await app.init();

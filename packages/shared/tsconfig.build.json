@@ -1,0 +1,23 @@
+{
+  // Build de @donemos/shared para consumo RUNTIME del backend (issue #154).
+  //
+  // El backend NestJS compila a CommonJS y corre con `node dist/main.js`; Node
+  // no ejecuta TypeScript ni puede require() un paquete ESM. Por eso emitimos
+  // CommonJS + .d.ts a dist/ y package.json apunta main/types/exports ahí.
+  // En desarrollo, Vitest (frontend + shared) y Jest (backend) siguen
+  // resolviendo `@donemos/shared` contra la fuente TS por velocidad (aliases /
+  // moduleNameMapper), así que este build solo importa para el runtime real.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "isolatedModules": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/**/*.spec.ts"]
+}

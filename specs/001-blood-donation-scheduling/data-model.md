@@ -168,7 +168,7 @@ Registro append-only de acciones administrativas (creación/edición/deshabilita
 | Columna | Tipo | Restricciones | Notas |
 |---------|------|---------------|-------|
 | `id` | `UUID` | PK | |
-| `admin_id` | `UUID` | `NOT NULL REFERENCES admin_user(id) ON DELETE SET NULL` | |
+| `admin_id` | `UUID` | `NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT` | `RESTRICT` (no `SET NULL`): la columna es `NOT NULL`, así que no puede anularse; al ser un log append-only, se prohíbe borrar un admin con historial para preservar la traza |
 | `action` | `TEXT` | `NOT NULL CHECK (action IN ('slot_created','slot_updated','slot_disabled','kill_switch_on','kill_switch_off','pdf_exported','login','failed_login'))` | |
 | `target_type` | `TEXT` | `NULL CHECK (target_type IN ('slot','system_state','report','session') OR target_type IS NULL)` | |
 | `target_id` | `UUID` | `NULL` | ID del recurso afectado si aplica |

@@ -1,8 +1,13 @@
 /**
  * Barrel del contrato compartido DonemosSC.
  *
- * Aquí se re-exportan los esquemas Zod y tipos derivados (z.infer) que
- * definen el contrato entre backend y frontend. Se puebla en la Fase 2
- * (T016–T020: id-number, appointment-code, appointments, slots, system, admin).
+ * Re-exporta todos los esquemas Zod y los tipos derivados (z.infer) que definen
+ * el contrato entre backend y frontend. Consumir siempre desde `@donemos/shared`
+ * — nunca importar archivos internos de `src/` directamente.
  */
-export {};
+export * from './schemas/id-number';
+export * from './schemas/appointment-code';
+export * from './schemas/appointments';
+export * from './schemas/slots';
+export * from './schemas/system';
+export * from './schemas/admin';

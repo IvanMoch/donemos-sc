@@ -166,9 +166,10 @@ export function WizardShell(_props: WizardShellProps): JSX.Element {
         ) : (
           <Button
             type="button"
+            variant="secondary"
             onClick={handleBack}
             disabled={state.status === 'submitting'}
-            className="bg-paper-warm text-ink hover:bg-neutral-200 sm:min-w-[8rem]"
+            className="sm:min-w-[8rem]"
           >
             Volver
           </Button>

@@ -179,8 +179,8 @@ export function KillSwitchPanel(): JSX.Element {
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
+              variant="secondary"
               onClick={() => setConfirming(false)}
-              className="bg-paper-warm text-ink hover:bg-neutral-200"
             >
               Cancelar
             </Button>

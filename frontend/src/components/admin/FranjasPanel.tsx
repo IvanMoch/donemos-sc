@@ -382,8 +382,8 @@ export function FranjasPanel(): JSX.Element {
                 <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                   <Button
                     type="button"
+                    variant="secondary"
                     onClick={closeDisable}
-                    className="bg-paper-warm text-ink hover:bg-neutral-200"
                   >
                     Cancelar
                   </Button>

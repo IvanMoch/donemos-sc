@@ -101,9 +101,10 @@ export function RescheduleForm({
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
         <Button
           type="button"
+          variant="secondary"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="bg-paper-warm text-ink hover:bg-neutral-200 sm:min-w-[8rem]"
+          className="sm:min-w-[8rem]"
         >
           Volver
         </Button>

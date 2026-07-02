@@ -216,9 +216,10 @@ export function LookupForm({ rescheduleDisabled }: LookupFormProps): JSX.Element
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               type="button"
+              variant="soft"
               isLoading={isCancelling}
               onClick={onCancel}
-              className="bg-primary-50 text-primary hover:bg-primary-100 sm:min-w-[10rem]"
+              className="sm:min-w-[10rem]"
             >
               Cancelar cita
             </Button>

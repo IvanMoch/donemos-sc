@@ -1,0 +1,64 @@
+/*
+ * Tokens de diseño DonemosSC — variables CSS.
+ *
+ * Reflejan la paleta AAA declarada en tailwind.config.mjs. Se exponen como
+ * custom properties para poder consumirlas desde componentes que no usen las
+ * utilidades de Tailwind (ej: SVGs inline, gráficos, mensajes de error).
+ *
+ * Todos los pares texto/fondo cumplen contraste ≥ 7:1 (WCAG AAA texto normal).
+ * Referencia: research §9.
+ */
+
+:root {
+  /* Colores primarios */
+  --color-primary: #8b1e2d;
+  --color-primary-600: #a02537;
+  --color-primary-800: #761828;
+
+  /* Texto y superficies */
+  --color-ink: #0f172a;
+  --color-ink-700: #334155;
+  --color-paper: #ffffff;
+  --color-paper-warm: #faf7f5;
+
+  /* Estados semánticos */
+  --color-success: #0f5132;
+  --color-error: #8b1e2d;
+
+  /* Foco AAA (visto también en el plugin de Tailwind) */
+  --focus-outline: 3px solid var(--color-ink);
+  --focus-offset: 2px;
+
+  /* Métricas mobile-first */
+  --touch-target-min: 44px;
+
+  /* Curvas y duraciones de animación (research §8) */
+  --motion-duration-fast: 220ms;
+  --motion-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/*
+ * Respeto obligatorio a prefers-reduced-motion (Principio III, WCAG SC 2.3.3).
+ * Reduce transiciones a un valor imperceptible y elimina cualquier `transform`
+ * o `animation` que pueda inducir mareo o distracción a usuarios sensibles.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast: 0.01s;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01s !important;
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transform: none !important;
+  }
+}

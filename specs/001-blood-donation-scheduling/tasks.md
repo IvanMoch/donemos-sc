@@ -316,12 +316,12 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Purpose**: Retención, hardening, performance, observabilidad, documentación.
 
-- [ ] T140 [P] Job de retención en `backend/src/modules/appointments/retention.job.ts` que corre cron diario (`@nestjs/schedule`) y anonimiza citas finales con `date` >90 días atrás (research §12); test integration previo en `backend/test/integration/retention.spec.ts` con override `TEST_REDACTION_DAYS`
-- [ ] T141 [P] Job de estados en `backend/src/modules/appointments/expire-active.job.ts` que marca como `no_show` las citas `active` cuyo slot ya pasó (por defecto 2h después de `end_time`); test integration previo
-- [ ] T142 [P] Log masking en `backend/src/common/interceptors/logging.interceptor.ts` (extender T027) — sanitizar `firstName`, `lastName`, `idNumber` en request bodies antes de emitir el log; test unitario previo
-- [ ] T143 [P] Añadir headers de seguridad en `backend/src/main.ts` con `helmet` (CSP restrictivo, HSTS solo prod); test integration verificando presencia de headers
-- [ ] T144 [P] Endpoint `/health/live` y `/health/ready` diferenciados en `backend/src/modules/health/health.controller.ts` (ready incluye ping Postgres, live solo proceso vivo)
-- [ ] T145 [P] Snapshot del OpenAPI generado contra `contracts/public-api.openapi.yaml` y `contracts/admin-api.openapi.yaml` en CI (job `openapi-check` en `.github/workflows/ci.yml`) — falla el build si divergen
+- [X] T140 [P] Job de retención en `backend/src/modules/appointments/retention.job.ts` que corre cron diario (`@nestjs/schedule`) y anonimiza citas finales con `date` >90 días atrás (research §12); test integration previo en `backend/test/integration/retention.spec.ts` con override `TEST_REDACTION_DAYS`
+- [X] T141 [P] Job de estados en `backend/src/modules/appointments/expire-active.job.ts` que marca como `no_show` las citas `active` cuyo slot ya pasó (por defecto 2h después de `end_time`); test integration previo
+- [X] T142 [P] Log masking en `backend/src/common/interceptors/logging.interceptor.ts` (extender T027) — sanitizar `firstName`, `lastName`, `idNumber` en request bodies antes de emitir el log; test unitario previo
+- [X] T143 [P] Añadir headers de seguridad en `backend/src/main.ts` con `helmet` (CSP restrictivo, HSTS solo prod); test integration verificando presencia de headers
+- [X] T144 [P] Endpoint `/health/live` y `/health/ready` diferenciados en `backend/src/modules/health/health.controller.ts` (ready incluye ping Postgres, live solo proceso vivo)
+- [X] T145 [P] Snapshot del OpenAPI generado contra `contracts/public-api.openapi.yaml` y `contracts/admin-api.openapi.yaml` en CI (job `openapi-check` en `.github/workflows/ci.yml`) — falla el build si divergen
 - [ ] T146 [P] Lighthouse mobile budget en `.github/workflows/ci.yml` con umbrales: Performance ≥90, Accessibility ≥95, Best Practices ≥90; corre sobre landing y `/agendar`
 - [X] T147 [P] Actualizar `README.md` raíz con: comandos `pnpm dev`/`pnpm test`/`pnpm build`, referencia a `specs/001-blood-donation-scheduling/quickstart.md`, y política de branches (Git Flow) según Constitución Principio VI
 - [ ] T148 [P] Añadir `CONTRIBUTING.md` breve indicando: TDD obligatorio, comentarios en español, checklist AAA + mobile antes de PR

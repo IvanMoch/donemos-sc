@@ -11,13 +11,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { LookupForm } from '../../components/lookup/LookupForm';
 import { publicApi } from '../../lib/api';
 
+const SYSTEM_STATUS_TIMEOUT_MS = 300;
 let rescheduleDisabled = false;
 try {
-  const status = await publicApi.getSystemStatus();
+  const status = await Promise.race([
+    publicApi.getSystemStatus(),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), SYSTEM_STATUS_TIMEOUT_MS)),
+  ]);
   rescheduleDisabled = Boolean(status?.appointmentsDisabled);
 } catch (_err) {
-  // Fallo tolerante: si el backend no responde, dejamos que reschedule quede
-  // habilitado. El PATCH devolverá el 409 kill_switch_active si aplica y el UI lo maneja.
+  // Fallo tolerante: si el backend no responde en 300ms, dejamos reschedule
+  // habilitado y el PATCH devolverá 409 kill_switch_active si aplica.
   rescheduleDisabled = false;
 }
 ---

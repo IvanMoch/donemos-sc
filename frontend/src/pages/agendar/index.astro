@@ -12,11 +12,16 @@ import '../../styles/wizard.css';
 import '../../styles/print.css';
 
 // SSR: si el kill switch está activo, redirigimos antes de renderizar.
-// Fallo tolerante: si el backend no responde, dejamos pasar (mostrar wizard)
-// para no bloquear al usuario por un incidente transitorio; el POST /appointments
-// devolverá 503 apenas intente confirmar y el UI lo maneja.
+// Fallo tolerante y con timeout corto: si el backend no responde en 300ms,
+// dejamos pasar y mostramos el wizard — no queremos bloquear LCP en producción
+// por un backend lento, y el POST /appointments devolverá 503 apenas el donante
+// intente confirmar (el UI lo maneja).
+const SYSTEM_STATUS_TIMEOUT_MS = 300;
 try {
-  const status = await publicApi.getSystemStatus();
+  const status = await Promise.race([
+    publicApi.getSystemStatus(),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), SYSTEM_STATUS_TIMEOUT_MS)),
+  ]);
   if (status?.appointmentsDisabled) {
     return Astro.redirect('/kill-switch-activo');
   }

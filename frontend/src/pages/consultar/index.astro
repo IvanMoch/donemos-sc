@@ -1,0 +1,30 @@
+---
+// Página /consultar — consulta / cancelación / reagendamiento de citas (US2, T099).
+//
+// SSR (no prerender) para leer el estado del kill switch en el server:
+//  - Cancelar SIEMPRE está disponible (FR-023b).
+//  - Reagendar queda deshabilitado si `appointmentsDisabled=true` (FR-023b/V10).
+// El botón "Reagendar" se muestra pero deshabilitado, con explicación visible,
+// para que el donante entienda por qué no puede reagendar en este momento.
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { LookupForm } from '../../components/lookup/LookupForm';
+import { publicApi } from '../../lib/api';
+
+let rescheduleDisabled = false;
+try {
+  const status = await publicApi.getSystemStatus();
+  rescheduleDisabled = Boolean(status?.appointmentsDisabled);
+} catch (_err) {
+  // Fallo tolerante: si el backend no responde, dejamos que reschedule quede
+  // habilitado. El PATCH devolverá el 409 kill_switch_active si aplica y el UI lo maneja.
+  rescheduleDisabled = false;
+}
+---
+
+<BaseLayout
+  title="Consultar mi cita — DonemosSC"
+  description="Consulta, cancela o reagenda tu cita para donar sangre en el Banco de Sangre del Hospital Central de San Cristóbal."
+>
+  <LookupForm client:load rescheduleDisabled={rescheduleDisabled} />
+</BaseLayout>

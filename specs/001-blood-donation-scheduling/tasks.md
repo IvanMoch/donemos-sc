@@ -193,15 +193,15 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 ### Tests for User Story 2 (TDD) ⚠️
 
-- [ ] T084 [P] [US2] Contract test `POST /api/v1/appointments/lookup` happy path en `backend/test/contract/appointments-lookup.spec.ts`
-- [ ] T085 [P] [US2] Contract test `POST /api/v1/appointments/lookup` cédula/código incorrectos → 404 genérico en `backend/test/contract/appointments-lookup-notfound.spec.ts` (FR-016)
-- [ ] T086 [P] [US2] Contract test rate limit lookup en `backend/test/contract/appointments-lookup-throttle.spec.ts` (11ª request/min → 429)
-- [ ] T087 [P] [US2] Contract test `POST /api/v1/appointments/{code}/cancel` en `backend/test/contract/appointments-cancel.spec.ts` (estado `cancelled_by_donor`, cupo liberado)
-- [ ] T088 [P] [US2] Contract test `cancel` con kill switch activo sigue funcionando (FR-023b) en `backend/test/contract/appointments-cancel-with-kill-switch.spec.ts`
-- [ ] T089 [P] [US2] Contract test `PATCH /api/v1/appointments/{code}/reschedule` happy path en `backend/test/contract/appointments-reschedule.spec.ts` (código conservado, cupo viejo libre, cupo nuevo consumido)
-- [ ] T090 [P] [US2] Contract test `reschedule` con kill switch activo → 409 `kill_switch_active` en `backend/test/contract/appointments-reschedule-kill-switch.spec.ts`
-- [ ] T091 [P] [US2] Contract test `reschedule` sin cupo en nuevo slot → 409 `slot_full` en `backend/test/contract/appointments-reschedule-full.spec.ts`
-- [ ] T092 [P] [US2] Integration test de concurrencia en reschedule (dos reagendamientos al mismo slot con 1 cupo) en `backend/test/integration/appointments-reschedule-concurrency.spec.ts`
+- [X] T084 [P] [US2] Contract test `POST /api/v1/appointments/lookup` happy path en `backend/test/contract/appointments-lookup.spec.ts`
+- [X] T085 [P] [US2] Contract test `POST /api/v1/appointments/lookup` cédula/código incorrectos → 404 genérico en `backend/test/contract/appointments-lookup-notfound.spec.ts` (FR-016)
+- [X] T086 [P] [US2] Contract test rate limit lookup en `backend/test/contract/appointments-lookup-throttle.spec.ts` (11ª request/min → 429)
+- [X] T087 [P] [US2] Contract test `POST /api/v1/appointments/{code}/cancel` en `backend/test/contract/appointments-cancel.spec.ts` (estado `cancelled_by_donor`, cupo liberado)
+- [X] T088 [P] [US2] Contract test `cancel` con kill switch activo sigue funcionando (FR-023b) en `backend/test/contract/appointments-cancel-with-kill-switch.spec.ts`
+- [X] T089 [P] [US2] Contract test `PATCH /api/v1/appointments/{code}/reschedule` happy path en `backend/test/contract/appointments-reschedule.spec.ts` (código conservado, cupo viejo libre, cupo nuevo consumido)
+- [X] T090 [P] [US2] Contract test `reschedule` con kill switch activo → 409 `kill_switch_active` en `backend/test/contract/appointments-reschedule-kill-switch.spec.ts`
+- [X] T091 [P] [US2] Contract test `reschedule` sin cupo en nuevo slot → 409 `slot_full` en `backend/test/contract/appointments-reschedule-full.spec.ts`
+- [X] T092 [P] [US2] Integration test de concurrencia en reschedule (dos reagendamientos al mismo slot con 1 cupo) en `backend/test/integration/appointments-reschedule-concurrency.spec.ts`
 - [ ] T093 [P] [US2] Playwright E2E consulta + cancelación en `frontend/test/e2e/us2-cancel.spec.ts`
 - [ ] T094 [P] [US2] Playwright E2E reagendamiento en `frontend/test/e2e/us2-reschedule.spec.ts`
 - [ ] T095 [P] [US2] axe-core AAA test de `/consultar` en `frontend/test/e2e/us2-a11y.spec.ts`
@@ -210,16 +210,16 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Backend**
 
-- [ ] T096 [P] [US2] Añadir métodos `findByCodeAndIdNumber(code, idNumber)`, `cancelByDonor(appointment)`, `rescheduleInTransaction(appointment, newSlotId)` en `backend/src/modules/appointments/appointments.repository.ts` — cada método con test unitario previo (mock Prisma)
-- [ ] T097 [US2] Ampliar `backend/src/modules/appointments/appointments.service.ts` con métodos `lookup`, `cancel`, `reschedule` (normaliza cédula, maneja not-found genérico, `reschedule` valida kill switch)
-- [ ] T098 [US2] Ampliar `backend/src/modules/appointments/appointments.controller.ts` con `POST /appointments/lookup` (throttle 10/min), `POST /appointments/:code/cancel`, `PATCH /appointments/:code/reschedule` (protegido por `@ProtectedByKillSwitch()`)
+- [X] T096 [P] [US2] Añadir métodos `findByCodeAndIdNumber(code, idNumber)`, `cancelByDonor(appointment)`, `rescheduleInTransaction(appointment, newSlotId)` en `backend/src/modules/appointments/appointments.repository.ts` — cada método con test unitario previo (mock Prisma)
+- [X] T097 [US2] Ampliar `backend/src/modules/appointments/appointments.service.ts` con métodos `lookup`, `cancel`, `reschedule` (normaliza cédula, maneja not-found genérico, `reschedule` valida kill switch)
+- [X] T098 [US2] Ampliar `backend/src/modules/appointments/appointments.controller.ts` con `POST /appointments/lookup` (throttle 10/min), `POST /appointments/:code/cancel`, `PATCH /appointments/:code/reschedule` (protegido por `@ProtectedByKillSwitch()`)
 
 **Frontend**
 
 - [ ] T099 [P] [US2] Crear `frontend/src/pages/consultar/index.astro` que en SSR chequea el kill switch y muestra el flujo completo pero deshabilita el botón "Reagendar" cuando `appointmentsDisabled=true`
 - [ ] T100 [P] [US2] Crear `frontend/src/components/lookup/LookupForm.tsx` (isla React) con dos pasos: (1) form cédula+código, (2) detalle con botones "Cancelar" y "Reagendar" — accesible AAA
 - [ ] T101 [P] [US2] Crear `frontend/src/components/lookup/RescheduleForm.tsx` reutilizando `StepSlot.tsx` (T077) para elegir nuevo slot y llamando al `PATCH .../reschedule`
-- [ ] T102 [P] [US2] Actualizar OpenAPI YAML verificando que el generado desde Zod (T072) sigue coincidiendo tras los nuevos endpoints
+- [X] T102 [P] [US2] Actualizar OpenAPI YAML verificando que el generado desde Zod (T072) sigue coincidiendo tras los nuevos endpoints
 
 **Checkpoint**: US1 + US2 funcionan de manera independiente y en conjunto.
 

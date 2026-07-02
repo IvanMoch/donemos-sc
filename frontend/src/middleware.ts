@@ -18,13 +18,8 @@ interface AdminProfile {
   displayName?: string;
 }
 
-declare global {
-  namespace App {
-    interface Locals {
-      adminUser?: AdminProfile;
-    }
-  }
-}
+// El tipo `App.Locals` se extiende en `src/env.d.ts` para no meter un
+// `declare global { namespace App {...} }` acá (ESLint prohíbe namespace).
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;

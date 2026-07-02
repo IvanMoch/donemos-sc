@@ -2,12 +2,12 @@
  * E2E US3 — accesibilidad AAA en las páginas del panel admin (T120).
  */
 import AxeBuilder from '@axe-core/playwright';
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { ADMIN_USERNAME, ADMIN_PASSWORD, loginAdmin, setKillSwitch } from '../helpers';
 
 const AAA_TAGS = ['wcag2a', 'wcag2aa', 'wcag2aaa', 'wcag21a', 'wcag21aa', 'wcag21aaa'];
 
-async function loginUI(page: import('@playwright/test').Page): Promise<void> {
+async function loginUI(page: Page): Promise<void> {
   await page.goto('/admin/login');
   await page.getByLabel(/usuario/i).fill(ADMIN_USERNAME);
   await page.getByLabel(/contraseña/i).fill(ADMIN_PASSWORD);

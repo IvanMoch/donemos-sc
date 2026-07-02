@@ -235,34 +235,34 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Auth**
 
-- [ ] T103 [P] [US3] Contract test `POST /api/v1/admin/auth/login` happy path (Set-Cookie con HttpOnly, Secure, SameSite=Strict, TTL 8h) en `backend/test/contract/admin-login.spec.ts`
-- [ ] T104 [P] [US3] Contract test login fallido → 401 en `backend/test/contract/admin-login-invalid.spec.ts`
-- [ ] T105 [P] [US3] Contract test rate limit login (5ª failed request/min → 429) en `backend/test/contract/admin-login-throttle.spec.ts`
-- [ ] T106 [P] [US3] Contract test `POST /admin/auth/logout` y `GET /admin/me` en `backend/test/contract/admin-me.spec.ts`
-- [ ] T107 [P] [US3] Integration test bcrypt cost 12 y hashing seguro en `backend/test/integration/admin-password-hashing.spec.ts`
+- [X] T103 [P] [US3] Contract test `POST /api/v1/admin/auth/login` happy path (Set-Cookie con HttpOnly, Secure, SameSite=Strict, TTL 8h) en `backend/test/contract/admin-login.spec.ts`
+- [X] T104 [P] [US3] Contract test login fallido → 401 en `backend/test/contract/admin-login-invalid.spec.ts`
+- [X] T105 [P] [US3] Contract test rate limit login (5ª failed request/min → 429) en `backend/test/contract/admin-login-throttle.spec.ts`
+- [X] T106 [P] [US3] Contract test `POST /admin/auth/logout` y `GET /admin/me` en `backend/test/contract/admin-me.spec.ts`
+- [X] T107 [P] [US3] Integration test bcrypt cost 12 y hashing seguro en `backend/test/integration/admin-password-hashing.spec.ts`
 
 **Slots admin**
 
-- [ ] T108 [P] [US3] Contract test `GET /admin/slots` con filtros y `includeDisabled` en `backend/test/contract/admin-slots-list.spec.ts`
-- [ ] T109 [P] [US3] Contract test `POST /admin/slots` happy path L–V 7:00–12:00 en `backend/test/contract/admin-slots-create.spec.ts`
-- [ ] T110 [P] [US3] Contract test `POST /admin/slots` fuera de horario sin `isExceptionHours` → 400 en `backend/test/contract/admin-slots-out-of-hours.spec.ts`
-- [ ] T111 [P] [US3] Contract test `POST /admin/slots` con `isExceptionHours=true` acepta sábado y registra excepción en `backend/test/contract/admin-slots-exception.spec.ts`
-- [ ] T112 [P] [US3] Contract test `PATCH /admin/slots/:id` con `capacity < usedCapacity` → 409 en `backend/test/contract/admin-slots-update-conflict.spec.ts`
-- [ ] T113 [P] [US3] Contract test `POST /admin/slots/:id/disable` con citas activas → todas quedan `cancelled_by_bank` y `cancelledAppointments` correcto en `backend/test/contract/admin-slots-disable.spec.ts`
+- [X] T108 [P] [US3] Contract test `GET /admin/slots` con filtros y `includeDisabled` en `backend/test/contract/admin-slots-list.spec.ts`
+- [X] T109 [P] [US3] Contract test `POST /admin/slots` happy path L–V 7:00–12:00 en `backend/test/contract/admin-slots-create.spec.ts`
+- [X] T110 [P] [US3] Contract test `POST /admin/slots` fuera de horario sin `isExceptionHours` → 400 en `backend/test/contract/admin-slots-out-of-hours.spec.ts`
+- [X] T111 [P] [US3] Contract test `POST /admin/slots` con `isExceptionHours=true` acepta sábado y registra excepción en `backend/test/contract/admin-slots-exception.spec.ts`
+- [X] T112 [P] [US3] Contract test `PATCH /admin/slots/:id` con `capacity < usedCapacity` → 409 en `backend/test/contract/admin-slots-update-conflict.spec.ts`
+- [X] T113 [P] [US3] Contract test `POST /admin/slots/:id/disable` con citas activas → todas quedan `cancelled_by_bank` y `cancelledAppointments` correcto en `backend/test/contract/admin-slots-disable.spec.ts`
 
 **Appointments admin y PDF**
 
-- [ ] T114 [P] [US3] Contract test `GET /admin/appointments` con rango y filtro por status en `backend/test/contract/admin-appointments-list.spec.ts`
-- [ ] T115 [P] [US3] Contract test `GET /admin/appointments/export.pdf` en `backend/test/contract/admin-appointments-pdf.spec.ts` (verificar `Content-Type: application/pdf`, magic bytes `%PDF-`, y que el PDF contiene el nombre del hospital y las cabeceras de columnas)
+- [X] T114 [P] [US3] Contract test `GET /admin/appointments` con rango y filtro por status en `backend/test/contract/admin-appointments-list.spec.ts`
+- [X] T115 [P] [US3] Contract test `GET /admin/appointments/export.pdf` en `backend/test/contract/admin-appointments-pdf.spec.ts` (verificar `Content-Type: application/pdf`, magic bytes `%PDF-`, y que el PDF contiene el nombre del hospital y las cabeceras de columnas)
 
 **Kill switch**
 
-- [ ] T116 [P] [US3] Contract test `GET /admin/system-state` en `backend/test/contract/admin-system-state.spec.ts`
-- [ ] T117 [P] [US3] Contract test `POST /admin/system-state/kill-switch` activar/desactivar en `backend/test/contract/admin-kill-switch.spec.ts`
+- [X] T116 [P] [US3] Contract test `GET /admin/system-state` en `backend/test/contract/admin-system-state.spec.ts`
+- [X] T117 [P] [US3] Contract test `POST /admin/system-state/kill-switch` activar/desactivar en `backend/test/contract/admin-kill-switch.spec.ts`
 
 **Audit log**
 
-- [ ] T118 [P] [US3] Integration test que verifica que cada mutación admin (login, create slot, disable slot, kill switch on/off, PDF export) inserta una fila en `admin_audit_log` en `backend/test/integration/admin-audit-log.spec.ts`
+- [X] T118 [P] [US3] Integration test que verifica que cada mutación admin (login, create slot, disable slot, kill switch on/off, PDF export) inserta una fila en `admin_audit_log` en `backend/test/integration/admin-audit-log.spec.ts`
 
 **E2E frontend**
 
@@ -273,30 +273,30 @@ description: "Task list for feature 001-blood-donation-scheduling — implementa
 
 **Backend — Auth**
 
-- [ ] T121 [P] [US3] Crear `backend/src/modules/admin/auth/admin-auth.service.ts` con `login(username, password)` bcrypt-verify + JWT firm; test unitario previo
-- [ ] T122 [US3] Crear `backend/src/modules/admin/auth/admin-auth.controller.ts` con `POST /admin/auth/login`, `POST /admin/auth/logout`, `GET /admin/me`; setear cookie HttpOnly Secure SameSite=Strict TTL 8h
-- [ ] T123 [US3] Registrar `AdminAuthModule` en `AppModule` con `@nestjs/jwt` configurado desde env
+- [X] T121 [P] [US3] Crear `backend/src/modules/admin/auth/admin-auth.service.ts` con `login(username, password)` bcrypt-verify + JWT firm; test unitario previo
+- [X] T122 [US3] Crear `backend/src/modules/admin/auth/admin-auth.controller.ts` con `POST /admin/auth/login`, `POST /admin/auth/logout`, `GET /admin/me`; setear cookie HttpOnly Secure SameSite=Strict TTL 8h
+- [X] T123 [US3] Registrar `AdminAuthModule` en `AppModule` con `@nestjs/jwt` configurado desde env
 
 **Backend — Slots admin**
 
-- [ ] T124 [P] [US3] Añadir en `backend/src/modules/slots/slots.repository.ts` los métodos admin `create`, `update`, `disable(withCancellation)` (transacción SERIALIZABLE que cambia estado de citas activas a `cancelled_by_bank`); test unitario previo
-- [ ] T125 [US3] Crear `backend/src/modules/admin/slots/admin-slots.controller.ts` con `GET /admin/slots`, `POST /admin/slots`, `PATCH /admin/slots/:id`, `POST /admin/slots/:id/disable`, todos protegidos por `AdminGuard`
+- [X] T124 [P] [US3] Añadir en `backend/src/modules/slots/slots.repository.ts` los métodos admin `create`, `update`, `disable(withCancellation)` (transacción SERIALIZABLE que cambia estado de citas activas a `cancelled_by_bank`); test unitario previo
+- [X] T125 [US3] Crear `backend/src/modules/admin/slots/admin-slots.controller.ts` con `GET /admin/slots`, `POST /admin/slots`, `PATCH /admin/slots/:id`, `POST /admin/slots/:id/disable`, todos protegidos por `AdminGuard`
 
 **Backend — Appointments admin + PDF**
 
-- [ ] T126 [P] [US3] Añadir en `backend/src/modules/appointments/appointments.repository.ts` método `findByDateRange({ from, to, status? })`; test unitario previo
-- [ ] T127 [P] [US3] Crear `backend/src/modules/admin/reports/pdf-report.service.ts` que usa `pdfkit` para generar un PDF con cabecera "Hospital Central de San Cristóbal", rango de fechas, tabla ordenada por fecha/hora con columnas hora / nombre / apellido / cédula / código / estado; test unitario previo con inspección de bytes generados
-- [ ] T128 [US3] Crear `backend/src/modules/admin/reports/admin-reports.controller.ts` con `GET /admin/appointments` y `GET /admin/appointments/export.pdf` (protegidos por `AdminGuard`); registrar acción `pdf_exported` en `admin_audit_log`
+- [X] T126 [P] [US3] Añadir en `backend/src/modules/appointments/appointments.repository.ts` método `findByDateRange({ from, to, status? })`; test unitario previo
+- [X] T127 [P] [US3] Crear `backend/src/modules/admin/reports/pdf-report.service.ts` que usa `pdfkit` para generar un PDF con cabecera "Hospital Central de San Cristóbal", rango de fechas, tabla ordenada por fecha/hora con columnas hora / nombre / apellido / cédula / código / estado; test unitario previo con inspección de bytes generados
+- [X] T128 [US3] Crear `backend/src/modules/admin/reports/admin-reports.controller.ts` con `GET /admin/appointments` y `GET /admin/appointments/export.pdf` (protegidos por `AdminGuard`); registrar acción `pdf_exported` en `admin_audit_log`
 
 **Backend — System state admin (kill switch)**
 
-- [ ] T129 [US3] Ampliar `backend/src/modules/system-state/system-state.service.ts` con `toggle(adminId, enabled, reason)` que actualiza singleton y registra `kill_switch_on`/`kill_switch_off` en audit log
-- [ ] T130 [US3] Crear `backend/src/modules/admin/system-state/admin-system-state.controller.ts` con `GET /admin/system-state` y `POST /admin/system-state/kill-switch`
+- [X] T129 [US3] Ampliar `backend/src/modules/system-state/system-state.service.ts` con `toggle(adminId, enabled, reason)` que actualiza singleton y registra `kill_switch_on`/`kill_switch_off` en audit log
+- [X] T130 [US3] Crear `backend/src/modules/admin/system-state/admin-system-state.controller.ts` con `GET /admin/system-state` y `POST /admin/system-state/kill-switch`
 
 **Backend — Audit log wire**
 
-- [ ] T131 [P] [US3] Crear `backend/src/modules/admin/audit/admin-audit-log.service.ts` inyectable; test unitario previo
-- [ ] T132 [US3] Inyectar `AdminAuditLogService` en los servicios de auth, slots admin, appointments admin y system-state admin, registrando la acción correspondiente en cada mutación
+- [X] T131 [P] [US3] Crear `backend/src/modules/admin/audit/admin-audit-log.service.ts` inyectable; test unitario previo
+- [X] T132 [US3] Inyectar `AdminAuditLogService` en los servicios de auth, slots admin, appointments admin y system-state admin, registrando la acción correspondiente en cada mutación
 
 **Frontend — Panel admin**
 
